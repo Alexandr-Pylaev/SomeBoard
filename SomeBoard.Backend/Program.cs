@@ -1,4 +1,4 @@
-namespace Backend;
+namespace SomeBoard.Backend;
 
 public class Program
 {
