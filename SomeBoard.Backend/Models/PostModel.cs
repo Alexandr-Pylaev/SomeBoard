@@ -22,7 +22,7 @@ public class PostModel : IDTODeserializable<ServerPostDTO>, IDTOSerializable<Pos
         PublishTime = publishTime ?? DateTime.Now;
     }
 
-    public ServerPostDTO ToDTO()
+    ServerPostDTO IDTODeserializable<ServerPostDTO>.ToDTO()
     {
         return new ServerPostDTO()
         {
@@ -33,7 +33,7 @@ public class PostModel : IDTODeserializable<ServerPostDTO>, IDTOSerializable<Pos
         };
     }
 
-    public PostModel FromDTO(CreatePostDTO dto)
+    PostModel IDTOSerializable<PostModel, CreatePostDTO>.FromDTO(CreatePostDTO dto)
     {
         Author = dto.Author;
         Message = dto.Message;
