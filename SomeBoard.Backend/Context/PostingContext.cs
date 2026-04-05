@@ -23,11 +23,14 @@ public class PostingContext : DbContext
         return Posts.OrderBy(x => x.PostId).Skip(position).Take(count);
     } 
 
-    public async Task DeleteAsync(Guid id, CancellationToken token)
+    public async Task<PostModel?> DeleteAsync(Guid id, CancellationToken token)
     {
-        (await Posts.FindAsync([id], token))?.DeletePost();
+        var post = await Posts.FindAsync([id], token);
+        if (post is null) return post;
+        post?.DeletePost();
         await SaveChangesAsync(token);
+        return post;
     }
     public PostModel Publish(string author, string message, DateTime dateTime) => PublishAsync(author, message, dateTime, CancellationToken.None).Result;
-    public void Delete(Guid id) => DeleteAsync(id, CancellationToken.None).Wait();
+    public PostModel? Delete(Guid id) => DeleteAsync(id, CancellationToken.None).Result;
 }

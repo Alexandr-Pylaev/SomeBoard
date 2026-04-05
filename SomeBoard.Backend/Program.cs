@@ -17,6 +17,7 @@ public class Program
     public const string POSTING_PASSFILE_PATH = $"{CONFIG_PATH}:Posting:PasswordFile";
     public const string POSTING_HOST_PATH = $"{CONFIG_PATH}:Posting:Host";
     public const string POSTING_PORT_PATH = $"{CONFIG_PATH}:Posting:Port";
+    public const string POSTING_ADMIN_SECRETFILE_PATH = $"{CONFIG_PATH}:Posting:AdminSecretFile";
     [Pure]
     public static string BuildPath(string name, string path = CONFIG_PATH) => $"{path}:{name}";
     
@@ -92,5 +93,10 @@ public class Program
         {
             return new EmptyNotAllowedException($"Database initialisation failed: Missing {name} from configuration.");
         }
+    }
+    
+    public static bool VerifyAdminSecret(string secret, IConfiguration config)
+    {
+        return File.ReadAllText(config.GetValue<string>(POSTING_ADMIN_SECRETFILE_PATH, "./adminsecrets.txt")) == secret;
     }
 }

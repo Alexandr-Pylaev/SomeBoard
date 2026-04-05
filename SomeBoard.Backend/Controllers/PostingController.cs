@@ -30,11 +30,23 @@ public class PostingController : ControllerBase
     
     [HttpDelete]
     [ActionName("Post")]
-    public ServerPostDTO? Delete(DeletePostDTO input, PostingContext context)
+    public JsonResult Delete(DeletePostDTO input, PostingContext context, IConfiguration configuration)
     {
-        return IDTODeserializable<ServerPostDTO>
-            .Convert<PostModel?>
-                (context.Delete(input.PostId))? 
-            .ToDTO();
+        return new JsonResult(_RealDelete(input, context, configuration));
+    }
+
+    private object? _RealDelete(DeletePostDTO input, PostingContext context, IConfiguration configuration)
+    {
+        if (Program.VerifyAdminSecret(input.Secret, configuration))
+            return IDTODeserializable<ServerPostDTO>
+                .Convert<PostModel?>
+                    (context.Delete(input.PostId))?
+                .ToDTO();
+        else
+            return new ErrorDTO()
+            {
+                ErrorText = "Failed to verify admin secret.",
+                ErrorCode = "BAD_ADMIN_SECRET"
+            };
     }
 }
