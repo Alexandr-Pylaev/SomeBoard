@@ -10,15 +10,18 @@ public class PostingContext : DbContext
 
     public PostingContext() { }
 
-    public PostModel Post(string author, string message)
+    public async Task<PostModel> PostAsync(string author, string message, CancellationToken token)
     {
         PostModel model = new(new Post(author, message, DateTime.Now));
-        Posts.Add(model);
+        await Posts.AddAsync(model, token);
         return model;
     }
 
-    public void Delete(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken token)
     {
-        Posts.Find(id)?.DeletePost();
+        (await Posts.FindAsync([id], token))?.DeletePost();
     }
+    
+    public PostModel Post(string author, string message) => PostAsync(author, message, CancellationToken.None).Result;
+    public void Delete(Guid id) => DeleteAsync(id, CancellationToken.None).Wait();
 }
