@@ -20,7 +20,7 @@ public class PostingContext : DbContext
 
     public IQueryable<PostModel> Fetch(int position, int count)
     {
-        return Posts.OrderBy(x => x.PostId).Skip(position).Take(count);
+        return Posts.Where(x => x.Deleted == false).OrderBy(x => x.PostId).Skip(position).Take(count);
     } 
 
     public async Task<PostModel?> DeleteAsync(Guid id, CancellationToken token)
