@@ -37,7 +37,6 @@ public class PostModel : IDTODeserializable<ServerPostDTO>, IDTOSerializable<Pos
     {
         Author = dto.Author;
         Message = dto.Message;
-        PublishTime = dto.PublishTime;
         return this;
     }
 }
