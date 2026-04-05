@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using SomeBoard.Shared;
 using SomeBoard.Shared.Posting;
 
@@ -7,6 +8,7 @@ namespace SomeBoard.Backend.Models;
 public class PostModel : IDTODeserializable<ServerPostDTO>, IDTOSerializable<PostModel, CreatePostDTO>
 {
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid PostId { get; set; }
     public string Author { get; set; }
     public string Message { get; set; }
