@@ -15,7 +15,7 @@ public class PostingController : ControllerBase
     public ServerPostDTO[] Fetch(int position, PostingContext context)
     {
         return context.Fetch(position, 25).Select(x => IDTODeserializable<ServerPostDTO>
-            .Convert<PostModel>(x) 
+            .Convert<PostModel>(x)!
             .ToDTO()).ToArray();
     }
     
@@ -24,7 +24,17 @@ public class PostingController : ControllerBase
     public ServerPostDTO Publish(CreatePostDTO input, PostingContext context)
     {
         return IDTODeserializable<ServerPostDTO>
-            .Convert<PostModel>(context.Publish(input.Author, input.Message, DateTime.Now)) 
+            .Convert<PostModel>(context.Publish(input.Author, input.Message, DateTime.Now))! 
+            .ToDTO();
+    }
+    
+    [HttpDelete]
+    [ActionName("Post")]
+    public ServerPostDTO? Delete(DeletePostDTO input, PostingContext context)
+    {
+        return IDTODeserializable<ServerPostDTO>
+            .Convert<PostModel?>
+                (context.Delete(input.PostId))? 
             .ToDTO();
     }
 }
