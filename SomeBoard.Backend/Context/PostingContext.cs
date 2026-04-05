@@ -16,4 +16,9 @@ public class PostingContext : DbContext
         Posts.Add(model);
         return model;
     }
+
+    public void Delete(Guid id)
+    {
+        Posts.Find(id)?.DeletePost();
+    }
 }
