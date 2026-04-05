@@ -8,7 +8,10 @@ public class PostingContext : DbContext
 {
     public DbSet<PostModel> Posts { get; set; }
 
-    public PostingContext(DbContextOptions options) : base(options) { }
+    public PostingContext(DbContextOptions options) : base(options)
+    {
+        Database.Migrate();
+    }
 
     public async Task<PostModel> PublishAsync(string author, string message, DateTime dateTime, CancellationToken token)
     {
