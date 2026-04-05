@@ -18,12 +18,16 @@ public class PostingContext : DbContext
         return model;
     }
 
+    public IQueryable<PostModel> Fetch(int position, int count)
+    {
+        return Posts.OrderBy(x => x.PostId).Take(new Range(position, position + count));
+    } 
+
     public async Task DeleteAsync(Guid id, CancellationToken token)
     {
         (await Posts.FindAsync([id], token))?.DeletePost();
         await SaveChangesAsync(token);
     }
-    
     public PostModel Publish(string author, string message, DateTime dateTime) => PublishAsync(author, message, dateTime, CancellationToken.None).Result;
     public void Delete(Guid id) => DeleteAsync(id, CancellationToken.None).Wait();
 }
