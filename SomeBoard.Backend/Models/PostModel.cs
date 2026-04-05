@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using SomeBoard.Shared.Posting;
 
 namespace SomeBoard.Backend.Models;
 
@@ -7,15 +6,17 @@ public class PostModel
 {
     [Key]
     public Guid PostId { get; set; }
-    public Post Post { get; set; }
+    public string Author { get; set; }
+    public string Message { get; set; }
+    public DateTime PublishTime { get; set; }
     public bool Deleted { get; private set; }
 
     public void DeletePost() => Deleted = true;
 
-    public PostModel(Post post)
+    public PostModel(string author = "", string message = "", DateTime? publishTime = null)
     {
-        Post = post;
+        Author = author;
+        Message = message;
+        PublishTime = publishTime ?? DateTime.Now;
     }
-    
-    public PostModel() : this (Post.Empty) {}
 }

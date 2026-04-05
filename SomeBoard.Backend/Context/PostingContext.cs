@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using SomeBoard.Backend.Models;
-using SomeBoard.Shared.Posting;
 
 namespace SomeBoard.Backend.Context;
 
@@ -13,7 +12,7 @@ public class PostingContext : DbContext
 
     public async Task<PostModel> PostAsync(string author, string message, CancellationToken token)
     {
-        PostModel model = new(new Post(author, message, DateTime.Now));
+        PostModel model = new(author, message, DateTime.Now);
         await Posts.AddAsync(model, token);
         await SaveChangesAsync(token);
         return model;
