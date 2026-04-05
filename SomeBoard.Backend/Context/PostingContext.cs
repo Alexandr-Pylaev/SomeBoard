@@ -10,7 +10,7 @@ public class PostingContext : DbContext
 
     public PostingContext(DbContextOptions options) : base(options) { }
 
-    public async Task<PostModel> PostAsync(string author, string message, DateTime dateTime, CancellationToken token)
+    public async Task<PostModel> PublishAsync(string author, string message, DateTime dateTime, CancellationToken token)
     {
         PostModel model = new(author, message, dateTime);
         await Posts.AddAsync(model, token);
@@ -24,6 +24,6 @@ public class PostingContext : DbContext
         await SaveChangesAsync(token);
     }
     
-    public PostModel Post(string author, string message, DateTime dateTime) => PostAsync(author, message, dateTime, CancellationToken.None).Result;
+    public PostModel Publish(string author, string message, DateTime dateTime) => PublishAsync(author, message, dateTime, CancellationToken.None).Result;
     public void Delete(Guid id) => DeleteAsync(id, CancellationToken.None).Wait();
 }
