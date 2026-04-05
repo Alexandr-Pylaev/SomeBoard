@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <AssemblyName>SomeBoard.Backend</AssemblyName>
+        <RootNamespace>SomeBoard.Backend</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SomeBoardLib\SomeBoardLib.csproj" />
+      <ProjectReference Include="..\SomeBoard.Shared\SomeBoard.Shared.csproj" />
     </ItemGroup>
 
 </Project>
