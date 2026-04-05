@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using SomeBoard.Backend.Models;
 using SomeBoard.Shared.Posting;
 
@@ -8,7 +9,7 @@ public class PostingContext : DbContext
 {
     public DbSet<PostModel> Posts { get; set; }
 
-    public PostingContext() { }
+    public PostingContext(DbContextOptions options) : base(options) { }
 
     public async Task<PostModel> PostAsync(string author, string message, CancellationToken token)
     {
