@@ -16,4 +16,6 @@ public class PostModel
     {
         Post = post;
     }
+    
+    public PostModel() : this (Post.Empty) {}
 }
