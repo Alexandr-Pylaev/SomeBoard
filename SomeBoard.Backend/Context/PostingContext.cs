@@ -14,12 +14,14 @@ public class PostingContext : DbContext
     {
         PostModel model = new(new Post(author, message, DateTime.Now));
         await Posts.AddAsync(model, token);
+        await SaveChangesAsync(token);
         return model;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken token)
     {
         (await Posts.FindAsync([id], token))?.DeletePost();
+        await SaveChangesAsync(token);
     }
     
     public PostModel Post(string author, string message) => PostAsync(author, message, CancellationToken.None).Result;
