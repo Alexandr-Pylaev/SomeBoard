@@ -21,6 +21,13 @@ public class PostModel : IDTODeserializable<ServerPostDTO>, IDTOSerializable<Pos
         Message = message;
         PublishTime = publishTime ?? DateTime.Now;
     }
+    
+    public PostModel(string author, string message, DateTime publishTime)
+    {
+        Author = author;
+        Message = message;
+        PublishTime = publishTime;
+    }
 
     ServerPostDTO IDTODeserializable<ServerPostDTO>.ToDTO()
     {
