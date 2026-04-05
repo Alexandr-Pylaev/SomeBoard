@@ -7,5 +7,10 @@ public class PostModel
 {
     [Key]
     public Guid PostId { get; set; }
-    public Post Post { get; set; } = Post.Empty;
+    public Post Post { get; set; }
+
+    public PostModel(Post post)
+    {
+        Post = post;
+    }
 }
