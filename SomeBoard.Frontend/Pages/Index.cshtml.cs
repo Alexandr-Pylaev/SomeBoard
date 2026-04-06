@@ -20,8 +20,18 @@ public class IndexModel : PageModel
         RestClient client = new RestClient(
             new RestClientOptions(Assets.Singleton.BoardBackendUrl 
                                   ?? throw new NullReferenceException("Cannot access backend: Backend URL is null.")));
+        RestResponse result = null!;
+        try
+        {
+            result = client.Get(new RestRequest("/post"));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            AddError("Server not responding.");
+            return;
+        }
 
-        var result = client.Get(new RestRequest("/post"));
         try
         {
             var posts = JsonSerializer.Deserialize<ServerPostDTO[]>(result.Content ?? "[]") ?? [];
