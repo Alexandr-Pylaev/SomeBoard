@@ -28,7 +28,7 @@ public class Program
         AddPostingContext(builder);
 
         // Add services to the container.
-        builder.Services.AddAuthorization();
+        // builder.Services.AddAuthorization(); // right now backend does not use authorization
 
         builder.Services.AddControllers();
         
@@ -45,7 +45,7 @@ public class Program
 
         app.UseHttpsRedirection();
 
-        app.UseAuthorization();
+        // app.UseAuthorization(); // right now backend does not use authorization
 
         app.MapControllers();
 
