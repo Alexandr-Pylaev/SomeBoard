@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/SomeBoard.Frontend.styles.css" asp-append-version="true"/>
 </head>
-<body>
+<body style="padding-top: 4rem;" class="bg-dark-subtle">
 <header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-lg navbar-dark bg-dark border-bottom">
+    <nav class="navbar navbar-expand-sm navbar-toggleable-lg fixed-top navbar-dark bg-dark border-bottom">
         <div class="container">
             <a class="navbar-brand" asp-area="" asp-page="/Index">@Assets.Singleton.BoardName</a>
             <div class="collapse navbar-collapse" id="navbarText">
