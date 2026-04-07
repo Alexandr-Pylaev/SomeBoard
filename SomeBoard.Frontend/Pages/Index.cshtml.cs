@@ -1,7 +1,9 @@
+using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RestSharp;
+using Serilog;
 using SomeBoard.Shared.Posting;
 
 namespace SomeBoard.Frontend.Pages;
@@ -33,6 +35,26 @@ public class IndexModel : PageModel
         try
         {
             result = client.Get(new RestRequest("/posting/post"));
+            if (!result.IsSuccessful)
+            {
+                if (result.StatusCode == HttpStatusCode.NotFound)
+                {
+                    AddError("Server not found.");
+                    SetPageBanner(NO_POST_FOUND_TEXT, "Server not found.");
+                    HideInput();
+                    Log.Error("Backend /posting/post path was not found. Something wrong with config or server.");
+                    return;
+                }
+                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}");
+                if (error is null)
+                {
+                    Log.Error($"Backend throw {result.StatusCode}, but not supplied it with error.");
+                    return;
+                }
+                AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
+                SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
+                Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
+            }
         }
         catch (Exception ex)
         {
@@ -61,6 +83,8 @@ public class IndexModel : PageModel
                 if (error is null) throw;
                 AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
                 SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
+                Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
+                Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
             }
             catch (JsonException ex2)
             {
