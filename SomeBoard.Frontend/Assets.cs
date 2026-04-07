@@ -3,20 +3,19 @@ namespace SomeBoard.Frontend;
 public class Assets
 {
     public const string CONFIG_PATH = "SomeBoard";
-    public const string BOARD_DESC_PATH = $"{CONFIG_PATH}:Board:Description";
-    public const string BOARD_NAME_PATH = $"{CONFIG_PATH}:Board:Name";
-    public const string BOARD_BACKEND_URL_PATH = $"{CONFIG_PATH}:Board:Backend:URL";
+    public const string BOARDS_PATH = $"{CONFIG_PATH}:Boards";
+    public const string DEFAULT_BOARD_ADDR = $"{CONFIG_PATH}:DefaultBoard";
+    public const string BOARDS_QUERY_NAME = "addr";
     public static Assets Singleton => _singleton.Value;
     private static readonly Lazy<Assets> _singleton = new();
 
-    public string BoardDescription = "Public text board";
-    public string BoardName = "SomeBoard";
-    public string? BoardBackendUrl;
-
+    public Board[] Boards { get; private set; }= null!;
+    public Board DefaultBoard = null!;
+    public static Board FailedBoard => new Board() { Name = "Unknown", Description = "Very unknown board" };
     public void Initialize(IConfiguration configuration)
     {
-        BoardDescription = configuration.GetValue<string>(BOARD_DESC_PATH, BoardDescription);
-        BoardName = configuration.GetValue<string>(BOARD_NAME_PATH, BoardName);
-        BoardBackendUrl = configuration.GetValue<string?>(BOARD_BACKEND_URL_PATH, null);
+        Boards = configuration.GetSection(BOARDS_PATH).Get<Board[]>() ?? [];
+        var defaultBoardAddr = configuration.GetValue<string?>(DEFAULT_BOARD_ADDR);
+        DefaultBoard = Boards.FirstOrDefault(x => x.Query == defaultBoardAddr) ?? Boards.First();
     }
 }

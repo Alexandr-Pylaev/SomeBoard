@@ -17,8 +17,10 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
+        if (!SetBoard()) return;
+
         RestClient client = new RestClient(
-            new RestClientOptions(Assets.Singleton.BoardBackendUrl 
+            new RestClientOptions(((Board?)ViewData["Board"])!.BackendUrl 
                                   ?? throw new NullReferenceException("Cannot access backend: Backend URL is null.")));
         RestResponse result = null!;
         try
@@ -51,6 +53,37 @@ public class IndexModel : PageModel
                 Console.WriteLine(ex2);
             }
         }
+    }
+
+    private bool SetBoard()
+    {
+        ViewData["Board"] = Assets.FailedBoard;
+        var isQueryPresent = HttpContext.Request.Query.TryGetValue(Assets.BOARDS_QUERY_NAME, out var query);
+        if (query.Count <= 0)
+        {
+            ViewData["Board"] = Assets.Singleton.DefaultBoard;
+            return true;
+        } 
+        else if (query.Count > 1)
+        {
+            AddError("Multiple addresses was set.");
+            return false;
+        } 
+        foreach (var board in Assets.Singleton.Boards)
+        {
+            if (isQueryPresent && query.First() == board.Query)
+            {
+                ViewData["Board"] = board;
+                return true;
+            }
+        }
+
+        if (ViewData["Board"]?.Equals(Assets.FailedBoard) ?? false)
+        {
+            AddError("Unknown board.");
+        }
+
+        return false;
     }
 
     private void AddError(string error)

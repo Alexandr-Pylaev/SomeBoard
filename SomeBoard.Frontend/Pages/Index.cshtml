@@ -1,9 +1,6 @@
 ﻿@page
 @using SomeBoard.Shared.Posting
 @model SomeBoard.Frontend.Pages.IndexModel
-@{
-    ViewData["Title"] = "Board";
-}
 @foreach (var error in (List<string>?)ViewData["Errors"] ?? [])
 {
     <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show" role="alert">
