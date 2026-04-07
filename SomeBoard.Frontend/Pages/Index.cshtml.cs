@@ -31,6 +31,7 @@ public class IndexModel : PageModel
         {
             Console.WriteLine(ex);
             AddError("Server not responding.");
+            SetPageBanner("No posts found.", "Failed to connect to server.");
             return;
         }
 
@@ -38,6 +39,11 @@ public class IndexModel : PageModel
         {
             var posts = JsonSerializer.Deserialize<ServerPostDTO[]>(result.Content ?? "[]") ?? [];
             ViewData.Add("Posts", posts);
+            if (posts.Length == 0)
+            {
+                SetPageBanner("No posts found.", "We think this board is empty. Maybe it's time to post something.");
+            }
+            else SetPageBanner(null, null);
         }
         catch (JsonException _)
         {
@@ -46,6 +52,7 @@ public class IndexModel : PageModel
                 var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}");
                 if (error is null) throw;
                 AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
+                SetPageBanner("This board is empty.", "Server returned errors.");
             }
             catch (JsonException ex2)
             {
@@ -58,6 +65,7 @@ public class IndexModel : PageModel
     private bool SetBoard()
     {
         ViewData["Board"] = Assets.FailedBoard;
+        SetPageBanner("This board is empty.", "Because this board doesn't exists.");
         var isQueryPresent = HttpContext.Request.Query.TryGetValue(Assets.BOARDS_QUERY_NAME, out var query);
         if (query.Count <= 0)
         {
@@ -84,6 +92,12 @@ public class IndexModel : PageModel
         }
 
         return false;
+    }
+
+    private void SetPageBanner(string? title, string? text)
+    {
+        ViewData["PageBannerTitle"] = title;
+        ViewData["PageBannerText"] = text;
     }
 
     private void AddError(string error)

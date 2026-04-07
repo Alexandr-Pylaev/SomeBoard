@@ -26,12 +26,12 @@
             </div>
         </div>
     }
-    @if (posts.Length <= 0)
+    @if (ViewData["PageBannerTitle"] != null)
     {
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">No posts found.</h5>
-                <p class="card-text">We think this board is empty. Maybe it's time to post something.</p>
+                <h5 class="card-title">@ViewData["PageBannerTitle"]</h5>
+                <p class="card-text">@ViewData["PageBannerText"]</p>
             </div>
         </div>
     }
