@@ -32,7 +32,7 @@ public class IndexModel : PageModel
         RestResponse result;
         try
         {
-            result = client.Get(new RestRequest("/" + Paths.Post.ToLower()));
+            result = client.Get(new RestRequest("/posting/post"));
         }
         catch (Exception ex)
         {

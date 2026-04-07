@@ -12,7 +12,7 @@ namespace SomeBoard.Backend.Controllers;
 public class PostingController : ControllerBase
 {
     [HttpGet]
-    [ActionName(Paths.Post)]
+    [ActionName("Post")]
     public ServerPostDTO[] Fetch(int position, PostingContext context)
     {
         Log.Information($"{HttpContext.TraceIdentifier}: Fetched 25 posts from position {position}.");
@@ -22,7 +22,7 @@ public class PostingController : ControllerBase
     }
     
     [HttpPost]
-    [ActionName(Paths.Post)]
+    [ActionName("Post")]
     public ServerPostDTO Publish(CreatePostDTO input, PostingContext context)
     {
         Log.Information($"{HttpContext.TraceIdentifier}: Requested new post with author {input.Author}.");
@@ -34,7 +34,7 @@ public class PostingController : ControllerBase
     }
     
     [HttpDelete]
-    [ActionName(Paths.Post)]
+    [ActionName("Post")]
     public JsonResult Delete(DeletePostDTO input, PostingContext context, IConfiguration configuration)
     {
         Log.Information($"{HttpContext.TraceIdentifier}: Requested delete post {input.PostId}.");
