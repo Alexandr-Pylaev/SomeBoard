@@ -17,7 +17,7 @@ public class PostingContext : DbContext
     public async Task<PostModel> PublishAsync(string author, string message, DateTime dateTime, CancellationToken token)
     {
         PostModel model = new(author, message, dateTime);
-        await Posts.AddAsync(model, token);
+        model = (await Posts.AddAsync(model, token)).Entity;
         await SaveChangesAsync(token);
         Log.Verbose($"Published new post {model.PostId} by {author}");
         return model;
