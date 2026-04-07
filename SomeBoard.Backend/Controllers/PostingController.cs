@@ -26,7 +26,7 @@ public class PostingController : ControllerBase
     public ServerPostDTO Publish(CreatePostDTO input, PostingContext context)
     {
         Log.Information($"{HttpContext.TraceIdentifier}: Requested new post with author {input.Author}.");
-        var post = context.Publish(input.Author, input.Message, DateTime.Now);
+        var post = context.Publish(input.Author, input.Message, DateTime.Now.ToUniversalTime());
         Log.Information($"{HttpContext.TraceIdentifier}: Created new post {post.PostId}.");
         return IDTODeserializable<ServerPostDTO>
             .Convert<PostModel>(post)! 
