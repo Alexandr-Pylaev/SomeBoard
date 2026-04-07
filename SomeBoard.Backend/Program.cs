@@ -2,6 +2,8 @@ using System.Data.Common;
 using System.Diagnostics.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Serilog;
+using Serilog.Events;
 using SomeBoard.Backend.Context;
 using SomeBoard.Shared.Exceptions;
 
@@ -23,11 +25,20 @@ public class Program
     
     public static void Main(string[] args)
     {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
+            .WriteTo.Console()
+            .WriteTo.File("./logs/SomeBoard.Backend.log", 
+                rollingInterval: RollingInterval.Day)
+            .CreateLogger();
         var builder = WebApplication.CreateBuilder(args);
 
         AddPostingContext(builder);
 
         // Add services to the container.
+        builder.Services.AddSerilog();
         // builder.Services.AddAuthorization(); // right now backend does not use authorization
 
         builder.Services.AddControllers();
@@ -36,6 +47,9 @@ public class Program
         builder.Services.AddOpenApi();
 
         var app = builder.Build();
+        
+        //Enable request logging
+        app.UseSerilogRequestLogging();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
