@@ -29,7 +29,7 @@
 
     @{
         string? bannerTitle = (string?) ViewData[IndexModel.PAGEBANNER_TITLE_DATANAME];
-        bool isInputHidden = (bool?) ViewData[IndexModel.IS_INPUT_HIDDEN_DATANAME] ?? true;
+        bool isInputHidden = (bool?) ViewData[IndexModel.IS_INPUT_HIDDEN_DATANAME] ?? false;
     }
     @if (bannerTitle != null)
     {
