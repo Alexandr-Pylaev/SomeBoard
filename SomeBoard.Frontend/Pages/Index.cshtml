@@ -21,22 +21,29 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
-<div class="text-center">
     @{
         var posts = (ServerPostDTO[]?)ViewData[IndexModel.POSTS_DATANAME] ?? [];
     }
-    @foreach (var post in posts)
+    
+    @for (int b = 0; b < posts.Length; b+=3)
     {
-        <div class="card" style="width: 24rem;">
-            <div class="card-body">
-                <p class="card-text text-body">@post.Message</p>
-                <h6 class="card-subtitle mb-2 text-body-secondary">Author: @post.Author</h6>
-                <h6 class="card-subtitle mb-2 text-body-secondary">Published: @post.PublishTime</h6>
-                <h6 class="card-subtitle mb-2 text-body-tertiary subtile">ID: @post.PostId</h6>
-            </div>
+        <div class="text-center d-flex">
+            @for (int i = 0; b+i < posts.Length && i < 3; i++)
+            {
+                var post = posts[b + i];
+                
+                <div class="card" style="width: 22rem; margin: 1rem">
+                    <div class="card-body">
+                        <p class="card-text text-body">@post.Message</p>
+                        <h6 class="card-subtitle mb-2 text-body-secondary">Author: @post.Author</h6>
+                        <h6 class="card-subtitle mb-2 text-body-secondary">Published: @post.PublishTime</h6>
+                        <h6 class="card-subtitle mb-2 text-body-tertiary subtile">ID: @post.PostId</h6>
+                    </div>
+                </div>
+            }
         </div>
     }
-
+<div class="text-center d-flex">
     @{
         string? bannerTitle = (string?) ViewData[IndexModel.PAGEBANNER_TITLE_DATANAME];
         bool isInputHidden = (bool?) ViewData[IndexModel.IS_INPUT_HIDDEN_DATANAME] ?? false;
@@ -54,14 +61,14 @@
 @if (!isInputHidden)
 {
     <nav class="navbar fixed-bottom navbar-expand-sm bg-body-tertiary">
-        <form class="container-fluid flex-nowrap text-center"  style="display: inline-block;">
+        <form class="container-fluid flex-nowrap text-center"  style="display: inline-block;" method="post">
             <div class="input-group">
                 <span class="input-group-text" id="basic-addon1">Username</span>
-                <input type="text" id="input-username" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1"/>
+                <input asp-for="CreatePost!.Author" type="text" id="input-username" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1"/>
             </div>
             <div class="input-group" style="padding-top: 0.5rem; padding-bottom: 0.5rem;">
                 <span class="input-group-text" id="basic-addon2">Text</span>
-                <textarea id="input-text" class="form-control" type="text" placeholder="" aria-label="Text"></textarea>
+                <textarea asp-for="CreatePost!.Message" id="input-text" class="form-control" type="text" placeholder="" aria-label="Text"></textarea>
             </div>
             <button class="btn btn-outline-success" id="input-btn" disabled type="submit" style="width: 100%">Send</button>
         </form>

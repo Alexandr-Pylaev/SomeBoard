@@ -11,12 +11,14 @@ namespace SomeBoard.Frontend.Pages;
 public class IndexModel : PageModel
 {
     public const string ERRORS_DATANAME = "Errors";
+    public const string ALERTS_DATANAME = "Alerts";
     public const string PAGEBANNER_TITLE_DATANAME = "PageBannerTitle";
     public const string PAGEBANNER_TEXT_DATANAME = "PageBannerText";
     public const string POSTS_DATANAME = "Posts";
     public const string IS_INPUT_HIDDEN_DATANAME = "IsInputHidden";
     public const string NO_POST_FOUND_TEXT = "This board is empty.";
-    
+    public const string ERROR_QUERY = "error";
+    public const string ALERT_QUERY = "info";
     private readonly ILogger<IndexModel> _logger;
 
     public IndexModel(ILogger<IndexModel> logger)
@@ -26,15 +28,70 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
+        var isQueryPresent = HttpContext.Request.Query.TryGetValue(ALERT_QUERY, out var alertQuery);
+        if (isQueryPresent)
+        {
+            foreach (var val in alertQuery)
+            {
+                if (val is not null) AddInfo(val);
+            }
+        }
+        
+        isQueryPresent = HttpContext.Request.Query.TryGetValue(ERROR_QUERY, out var errorQuery);
+        if (isQueryPresent)
+        {
+            foreach (var val in errorQuery)
+            {
+                if (val is not null) AddError(val);
+            }
+        }
         if (!SetBoard()) return;
-
-        RestClient client = new RestClient(
+        var client = new RestClient(
             new RestClientOptions(((Board?)ViewData[Assets.BOARD_DATANAME])!.BackendUrl
                                   ?? throw new NullReferenceException("Cannot access backend: Backend URL is null.")));
         RestResponse result;
+        if (MakeRequest(client, out result, "/posting/post")) return;
         try
         {
-            result = client.Get(new RestRequest("/posting/post"));
+            var posts = JsonSerializer.Deserialize<ServerPostDTO[]>(result.Content ?? "[]", jsonSerializerOptions) ?? [];
+            ViewData.Add(POSTS_DATANAME, posts);
+            if (posts.Length == 0)
+            {
+                SetPageBanner(NO_POST_FOUND_TEXT, "We think this board is empty. Maybe it's time to post something.");
+            }
+            else SetPageBanner(null, null);
+        }
+        catch (JsonException _)
+        {
+            try
+            {
+                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",jsonSerializerOptions);
+                if (error == new ErrorDTO()) throw;
+                AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
+                SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
+                Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
+                Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
+            }
+            catch (JsonException ex2)
+            {
+                AddError("Received invalid respond from server.");
+                Console.WriteLine(ex2);
+            }
+        }
+    }
+    
+    JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    private bool MakeRequest(RestClient client, out RestResponse result, string? uri, Method method = Method.Get, object? body = null)
+    {
+        try
+        {
+            var req = new RestRequest(uri, method);
+            if (body is not null) req.AddJsonBody(body);
+            result = client.Execute(req);
             if (!result.IsSuccessful)
             {
                 if (result.StatusCode == HttpStatusCode.NotFound)
@@ -43,13 +100,13 @@ public class IndexModel : PageModel
                     SetPageBanner(NO_POST_FOUND_TEXT, "Server not found.");
                     HideInput();
                     Log.Error("Backend /posting/post path was not found. Something wrong with config or server.");
-                    return;
+                    return true;
                 }
-                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}");
-                if (error is null)
+                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",jsonSerializerOptions);
+                if (error == new ErrorDTO())
                 {
                     Log.Error($"Backend throw {result.StatusCode}, but not supplied it with error.");
-                    return;
+                    return true;
                 }
                 AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
                 SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
@@ -62,36 +119,11 @@ public class IndexModel : PageModel
             AddError("Server not responding.");
             SetPageBanner(NO_POST_FOUND_TEXT, "Failed to connect to server.");
             HideInput();
-            return;
+            result = null;
+            return true;
         }
 
-        try
-        {
-            var posts = JsonSerializer.Deserialize<ServerPostDTO[]>(result.Content ?? "[]") ?? [];
-            ViewData.Add(POSTS_DATANAME, posts);
-            if (posts.Length == 0)
-            {
-                SetPageBanner(NO_POST_FOUND_TEXT, "We think this board is empty. Maybe it's time to post something.");
-            }
-            else SetPageBanner(null, null);
-        }
-        catch (JsonException _)
-        {
-            try
-            {
-                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}");
-                if (error is null) throw;
-                AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
-                SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
-                Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
-                Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
-            }
-            catch (JsonException ex2)
-            {
-                AddError("Received invalid respond from server.");
-                Console.WriteLine(ex2);
-            }
-        }
+        return false;
     }
 
     private bool SetBoard()
@@ -169,6 +201,42 @@ public class IndexModel : PageModel
                 throw new InvalidOperationException($"Alert list {dataName} cannot be added or updated.");
         }
     }
+
+    [BindProperty] public CreatePostDTO CreatePost { get; set; } = new();
+    public IActionResult OnPost()
+    {
+        if (!SetBoard()) return Redirect("/");
+        var client = new RestClient(
+            new RestClientOptions(((Board?)ViewData[Assets.BOARD_DATANAME])!.BackendUrl
+                                  ?? throw new NullReferenceException("Cannot access backend: Backend URL is null.")));
+        RestResponse result;
+        if (MakeRequest(client, out result, "/posting/post", Method.Post, CreatePost)) return Redirect("/");
+        try
+        {
+            var post = JsonSerializer.Deserialize<ServerPostDTO>(result.Content ?? "{}",jsonSerializerOptions);
+            if (post.PostId != Guid.Empty)
+            {
+                return Redirect($"/?{ALERT_QUERY}="+"Post created.");
+            }
+            else return Redirect($"/?{ERROR_QUERY}="+"Post cannot be created: Server responded with non-existing post.");
         }
+        catch (JsonException _)
+        {
+            try
+            {
+                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",jsonSerializerOptions);
+                if (error == new ErrorDTO()) throw;
+                Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
+                Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
+                return Redirect($"/?{ERROR_QUERY}="+$"Post cannot be created: Error: {error.ErrorText}\nError code: {error.ErrorCode}");
+            }
+            catch (JsonException ex2)
+            {
+                Console.WriteLine(ex2);
+                return Redirect($"/?{ERROR_QUERY}="+"Post cannot be created: Received invalid respond from server.");
+            }
+        }
+
+        return Redirect("/");
     }
 }
