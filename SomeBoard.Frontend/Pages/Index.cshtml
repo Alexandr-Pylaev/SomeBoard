@@ -13,7 +13,7 @@
 }
 @foreach (var alert in (List<string>?)ViewData[IndexModel.ALERTS_DATANAME] ?? [])
 { 
-    <div class="alert alert-primary d-flex align-items-center" role="alert">
+    <div class="alert alert-primary d-flex align-items-center alert-dismissible fade show" role="alert">
         <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
         <div>
             @alert
