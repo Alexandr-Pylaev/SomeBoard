@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using SomeBoard.Backend.Context;
 using SomeBoard.Backend.Models;
 using SomeBoard.Shared;
@@ -14,6 +15,7 @@ public class PostingController : ControllerBase
     [ActionName(Paths.Post)]
     public ServerPostDTO[] Fetch(int position, PostingContext context)
     {
+        Log.Information($"{HttpContext.TraceIdentifier}: Fetched 25 posts from position {position}.");
         return context.Fetch(position, 25).Select(x => IDTODeserializable<ServerPostDTO>
             .Convert<PostModel>(x)!
             .ToDTO()).ToArray();
@@ -23,8 +25,11 @@ public class PostingController : ControllerBase
     [ActionName(Paths.Post)]
     public ServerPostDTO Publish(CreatePostDTO input, PostingContext context)
     {
+        Log.Information($"{HttpContext.TraceIdentifier}: Requested new post with author {input.Author}.");
+        var post = context.Publish(input.Author, input.Message, DateTime.Now);
+        Log.Information($"{HttpContext.TraceIdentifier}: Created new post {post.PostId}.");
         return IDTODeserializable<ServerPostDTO>
-            .Convert<PostModel>(context.Publish(input.Author, input.Message, DateTime.Now))! 
+            .Convert<PostModel>(post)! 
             .ToDTO();
     }
     
@@ -32,6 +37,7 @@ public class PostingController : ControllerBase
     [ActionName(Paths.Post)]
     public JsonResult Delete(DeletePostDTO input, PostingContext context, IConfiguration configuration)
     {
+        Log.Information($"{HttpContext.TraceIdentifier}: Requested delete post {input.PostId}.");
         return new JsonResult(_RealDelete(input, context, configuration));
     }
 

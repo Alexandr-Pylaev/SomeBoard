@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Serilog;
 using SomeBoard.Backend.Models;
 
 namespace SomeBoard.Backend.Context;
@@ -18,6 +19,7 @@ public class PostingContext : DbContext
         PostModel model = new(author, message, dateTime);
         await Posts.AddAsync(model, token);
         await SaveChangesAsync(token);
+        Log.Verbose($"Published new post {model.PostId} by {author}");
         return model;
     }
 
@@ -32,6 +34,7 @@ public class PostingContext : DbContext
         if (post is null) return post;
         post?.DeletePost();
         await SaveChangesAsync(token);
+        Log.Verbose($"Deleted post {id}.");
         return post;
     }
     public PostModel Publish(string author, string message, DateTime dateTime) => PublishAsync(author, message, dateTime, CancellationToken.None).Result;
