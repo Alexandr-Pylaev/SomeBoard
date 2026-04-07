@@ -7,7 +7,9 @@
   vertical-align: -.125em;
   fill: currentcolor;
 }
-
+.subtile {
+  font-size: 12px;
+}
 html {
   font-size: 14px;
 }
