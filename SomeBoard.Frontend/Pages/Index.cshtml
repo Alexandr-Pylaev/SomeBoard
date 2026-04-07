@@ -15,7 +15,10 @@
     </div>
 }
 <div class="text-center">
-    @foreach (var post in (ServerPostDTO[]?) ViewData["Posts"] ?? [])
+    @{
+        var posts = (ServerPostDTO[]?)ViewData["Posts"] ?? [];
+    }
+    @foreach (var post in posts)
     {
         <div class="card" style="width: 18rem;">
             <div class="card-body">
@@ -23,6 +26,15 @@
                 <h6 class="card-subtitle mb-2 text-body-secondary">Author: @post.Author</h6>
                 <h6 class="card-subtitle mb-2 text-body-secondary">Published: @post.PublishTime.ToString("D T")</h6>
                 <h6 class="card-subtitle mb-2 text-body-secondary">ID: @post.PostId</h6>
+            </div>
+        </div>
+    }
+    @if (posts.Length <= 0)
+    {
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">No posts found.</h5>
+                <p class="card-text">We think this board is empty. Maybe it's time to post something.</p>
             </div>
         </div>
     }
