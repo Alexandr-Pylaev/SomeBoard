@@ -16,7 +16,7 @@
             <a class="navbar-brand" asp-area="" asp-page="/Index">SomeBoard</a>
             <div class="collapse navbar-collapse" id="navbarText">
                 <span class="navbar-text">
-                    @(((Board?)ViewData["Board"])?.Description)
+                    @(((Board?)ViewData["Board"])?.Name) | @(((Board?)ViewData["Board"])?.Description)
                 </span>
             </div>
             <div class="navbar-nav">
