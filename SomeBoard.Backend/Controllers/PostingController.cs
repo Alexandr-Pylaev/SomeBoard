@@ -11,7 +11,7 @@ namespace SomeBoard.Backend.Controllers;
 public class PostingController : ControllerBase
 {
     [HttpGet]
-    [ActionName("Post")]
+    [ActionName(Paths.Post)]
     public ServerPostDTO[] Fetch(int position, PostingContext context)
     {
         return context.Fetch(position, 25).Select(x => IDTODeserializable<ServerPostDTO>
@@ -20,7 +20,7 @@ public class PostingController : ControllerBase
     }
     
     [HttpPost]
-    [ActionName("Post")]
+    [ActionName(Paths.Post)]
     public ServerPostDTO Publish(CreatePostDTO input, PostingContext context)
     {
         return IDTODeserializable<ServerPostDTO>
@@ -29,7 +29,7 @@ public class PostingController : ControllerBase
     }
     
     [HttpDelete]
-    [ActionName("Post")]
+    [ActionName(Paths.Post)]
     public JsonResult Delete(DeletePostDTO input, PostingContext context, IConfiguration configuration)
     {
         return new JsonResult(_RealDelete(input, context, configuration));
@@ -46,7 +46,7 @@ public class PostingController : ControllerBase
             return new ErrorDTO()
             {
                 ErrorText = "Failed to verify admin secret.",
-                ErrorCode = "BAD_ADMIN_SECRET"
+                ErrorCode = ErrorCodes.BAD_ADMIN_SECRET
             };
     }
 }

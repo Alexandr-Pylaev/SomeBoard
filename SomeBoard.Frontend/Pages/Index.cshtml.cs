@@ -8,6 +8,12 @@ namespace SomeBoard.Frontend.Pages;
 
 public class IndexModel : PageModel
 {
+    public const string ERRORS_DATANAME = "Errors";
+    public const string PAGEBANNER_TITLE_DATANAME = "PageBannerTitle";
+    public const string PAGEBANNER_TEXT_DATANAME = "PageBannerText";
+    public const string POSTS_DATANAME = "Posts";
+    public const string NO_POST_FOUND_TEXT = "This board is empty.";
+    
     private readonly ILogger<IndexModel> _logger;
 
     public IndexModel(ILogger<IndexModel> logger)
@@ -20,28 +26,28 @@ public class IndexModel : PageModel
         if (!SetBoard()) return;
 
         RestClient client = new RestClient(
-            new RestClientOptions(((Board?)ViewData["Board"])!.BackendUrl 
+            new RestClientOptions(((Board?)ViewData[Assets.BOARD_DATANAME])!.BackendUrl
                                   ?? throw new NullReferenceException("Cannot access backend: Backend URL is null.")));
-        RestResponse result = null!;
+        RestResponse result;
         try
         {
-            result = client.Get(new RestRequest("/post"));
+            result = client.Get(new RestRequest("/" + Paths.Post.ToLower()));
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
             AddError("Server not responding.");
-            SetPageBanner("No posts found.", "Failed to connect to server.");
+            SetPageBanner(NO_POST_FOUND_TEXT, "Failed to connect to server.");
             return;
         }
 
         try
         {
             var posts = JsonSerializer.Deserialize<ServerPostDTO[]>(result.Content ?? "[]") ?? [];
-            ViewData.Add("Posts", posts);
+            ViewData.Add(POSTS_DATANAME, posts);
             if (posts.Length == 0)
             {
-                SetPageBanner("No posts found.", "We think this board is empty. Maybe it's time to post something.");
+                SetPageBanner(NO_POST_FOUND_TEXT, "We think this board is empty. Maybe it's time to post something.");
             }
             else SetPageBanner(null, null);
         }
@@ -52,7 +58,7 @@ public class IndexModel : PageModel
                 var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}");
                 if (error is null) throw;
                 AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
-                SetPageBanner("This board is empty.", "Server returned errors.");
+                SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
             }
             catch (JsonException ex2)
             {
@@ -64,52 +70,60 @@ public class IndexModel : PageModel
 
     private bool SetBoard()
     {
-        ViewData["Board"] = Assets.FailedBoard;
-        SetPageBanner("This board is empty.", "Because this board doesn't exists.");
-        var isQueryPresent = HttpContext.Request.Query.TryGetValue(Assets.BOARDS_QUERY_NAME, out var query);
-        if (query.Count <= 0)
+        var setBoard = Assets.FailedBoard;
+        try
         {
-            ViewData["Board"] = Assets.Singleton.DefaultBoard;
-            return true;
-        } 
-        else if (query.Count > 1)
-        {
-            AddError("Multiple addresses was set.");
-            return false;
-        } 
-        foreach (var board in Assets.Singleton.Boards)
-        {
-            if (isQueryPresent && query.First() == board.Query)
+            SetPageBanner(NO_POST_FOUND_TEXT, "Because this board doesn't exists.");
+            var isQueryPresent = HttpContext.Request.Query.TryGetValue(Assets.BOARDS_QUERY_NAME, out var query);
+            if (query.Count <= 0)
             {
-                ViewData["Board"] = board;
+                setBoard = Assets.Singleton.DefaultBoard;
                 return true;
             }
-        }
+            else if (query.Count > 1)
+            {
+                AddError("Multiple addresses was set.");
+                return false;
+            }
 
-        if (ViewData["Board"]?.Equals(Assets.FailedBoard) ?? false)
+            foreach (var board in Assets.Singleton.Boards)
+            {
+                if (isQueryPresent && query.First() == board.Query)
+                {
+                    setBoard = board;
+                    return true;
+                }
+            }
+
+            if (setBoard?.Equals(Assets.FailedBoard) ?? false)
+            {
+                AddError("Unknown board.");
+            }
+
+            return false;
+        }
+        finally
         {
-            AddError("Unknown board.");
+            ViewData[Assets.BOARD_DATANAME] = setBoard;
         }
-
-        return false;
     }
 
     private void SetPageBanner(string? title, string? text)
     {
-        ViewData["PageBannerTitle"] = title;
-        ViewData["PageBannerText"] = text;
+        ViewData[PAGEBANNER_TITLE_DATANAME] = title;
+        ViewData[PAGEBANNER_TEXT_DATANAME] = text;
     }
 
     private void AddError(string error)
     {
-        if (ViewData.TryGetValue("Errors", out var ls))
+        if (ViewData.TryGetValue(ERRORS_DATANAME, out var ls))
         {
             var errors = (List<String>?)ls;
             errors?.Add(error);
         }
         else
         {
-            if (!ViewData.TryAdd("Errors", new List<string> { error }))
+            if (!ViewData.TryAdd(ERRORS_DATANAME, new List<string> { error }))
                 throw new InvalidOperationException("Errors list cannot be added or updated.");
         }
     }

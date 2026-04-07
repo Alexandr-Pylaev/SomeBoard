@@ -6,6 +6,7 @@ public class Assets
     public const string BOARDS_PATH = $"{CONFIG_PATH}:Boards";
     public const string DEFAULT_BOARD_ADDR = $"{CONFIG_PATH}:DefaultBoard";
     public const string BOARDS_QUERY_NAME = "addr";
+    public const string BOARD_DATANAME = "Board";
     public static Assets Singleton => _singleton.Value;
     private static readonly Lazy<Assets> _singleton = new();
 

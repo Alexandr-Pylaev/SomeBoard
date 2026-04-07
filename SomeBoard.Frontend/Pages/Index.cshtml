@@ -1,7 +1,7 @@
 ﻿@page
 @using SomeBoard.Shared.Posting
 @model SomeBoard.Frontend.Pages.IndexModel
-@foreach (var error in (List<string>?)ViewData["Errors"] ?? [])
+@foreach (var error in (List<string>?)ViewData[IndexModel.ERRORS_DATANAME] ?? [])
 {
     <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show" role="alert">
         <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Error:"><use xlink:href="#exclamation-triangle-fill"/></svg>
@@ -13,7 +13,7 @@
 }
 <div class="text-center">
     @{
-        var posts = (ServerPostDTO[]?)ViewData["Posts"] ?? [];
+        var posts = (ServerPostDTO[]?)ViewData[IndexModel.POSTS_DATANAME] ?? [];
     }
     @foreach (var post in posts)
     {
@@ -26,12 +26,16 @@
             </div>
         </div>
     }
-    @if (ViewData["PageBannerTitle"] != null)
+
+    @{
+        string? bannerTitle = (string?) ViewData[IndexModel.PAGEBANNER_TITLE_DATANAME];
+    }
+    @if (bannerTitle != null)
     {
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">@ViewData["PageBannerTitle"]</h5>
-                <p class="card-text">@ViewData["PageBannerText"]</p>
+                <h5 class="card-title">@bannerTitle</h5>
+                <p class="card-text">@ViewData[IndexModel.PAGEBANNER_TEXT_DATANAME]</p>
             </div>
         </div>
     }

@@ -94,9 +94,11 @@ public class Program
             return new EmptyNotAllowedException($"Database initialisation failed: Missing {name} from configuration.");
         }
     }
-    
+
+    public const string AdminSecretsDefaultFile = "adminsecrets.txt";
     public static bool VerifyAdminSecret(string secret, IConfiguration config)
     {
-        return File.ReadAllText(config.GetValue<string>(POSTING_ADMIN_SECRETFILE_PATH, "./adminsecrets.txt")) == secret;
+        return File.ReadAllText(config.GetValue<string>(POSTING_ADMIN_SECRETFILE_PATH, 
+            Path.Combine(Directory.GetCurrentDirectory(), AdminSecretsDefaultFile))) == secret;
     }
 }
