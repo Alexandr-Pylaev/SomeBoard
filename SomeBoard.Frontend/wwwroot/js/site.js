@@ -1,4 +1,13 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
+﻿var textInput = document.getElementById('input-text');
+var userInput = document.getElementById('input-username');
+var inputBtn = document.getElementById('input-btn');
+textInput.addEventListener('input', function (e) {
+    updateButton()
+})
+userInput.addEventListener('input', function (e) {
+    updateButton()
+})
+function updateButton() {
+    inputBtn.disabled = textInput.value === "" || userInput.value === "";
+}
+updateButton()

@@ -12,6 +12,7 @@ public class IndexModel : PageModel
     public const string PAGEBANNER_TITLE_DATANAME = "PageBannerTitle";
     public const string PAGEBANNER_TEXT_DATANAME = "PageBannerText";
     public const string POSTS_DATANAME = "Posts";
+    public const string IS_INPUT_HIDDEN_DATANAME = "IsInputHidden";
     public const string NO_POST_FOUND_TEXT = "This board is empty.";
     
     private readonly ILogger<IndexModel> _logger;
@@ -38,6 +39,7 @@ public class IndexModel : PageModel
             Console.WriteLine(ex);
             AddError("Server not responding.");
             SetPageBanner(NO_POST_FOUND_TEXT, "Failed to connect to server.");
+            HideInput();
             return;
         }
 
@@ -83,6 +85,7 @@ public class IndexModel : PageModel
             else if (query.Count > 1)
             {
                 AddError("Multiple addresses was set.");
+                HideInput();
                 return false;
             }
 
@@ -99,13 +102,18 @@ public class IndexModel : PageModel
             {
                 AddError("Unknown board.");
             }
-
+            HideInput();
             return false;
         }
         finally
         {
             ViewData[Assets.BOARD_DATANAME] = setBoard;
         }
+    }
+
+    private void HideInput()
+    {
+        ViewData.Add(IS_INPUT_HIDDEN_DATANAME, true);
     }
 
     private void SetPageBanner(string? title, string? text)
