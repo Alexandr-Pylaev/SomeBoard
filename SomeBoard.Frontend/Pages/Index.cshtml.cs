@@ -148,15 +148,27 @@ public class IndexModel : PageModel
 
     private void AddError(string error)
     {
-        if (ViewData.TryGetValue(ERRORS_DATANAME, out var ls))
+        AddAlert(error, ERRORS_DATANAME);
+    }
+    
+    private void AddInfo(string info)
+    {
+        AddAlert(info, ALERTS_DATANAME);
+    }
+    
+    private void AddAlert(string alert, string dataName)
+    {
+        if (ViewData.TryGetValue(dataName, out var ls))
         {
-            var errors = (List<String>?)ls;
-            errors?.Add(error);
+            var list = (List<String>?)ls;
+            list?.Add(alert);
         }
         else
         {
-            if (!ViewData.TryAdd(ERRORS_DATANAME, new List<string> { error }))
-                throw new InvalidOperationException("Errors list cannot be added or updated.");
+            if (!ViewData.TryAdd(dataName, new List<string> { alert }))
+                throw new InvalidOperationException($"Alert list {dataName} cannot be added or updated.");
+        }
+    }
         }
     }
 }
