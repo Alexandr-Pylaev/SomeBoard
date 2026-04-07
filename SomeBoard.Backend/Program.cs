@@ -101,7 +101,7 @@ public class Program
         builder.Services.AddDbContext<PostingContext>(options =>
         {
             options.UseNpgsql(conString);
-        });
+        }, ServiceLifetime.Singleton);
 
         EmptyNotAllowedException MissingValue(string name)
         {
