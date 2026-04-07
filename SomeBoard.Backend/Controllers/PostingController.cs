@@ -48,8 +48,10 @@ public class PostingController : ControllerBase
                 .Convert<PostModel?>
                     (context.Delete(input.PostId))?
                 .ToDTO();
-        else
-            return new ErrorDTO()
+        if (string.IsNullOrEmpty(input.Secret)) Response.StatusCode = StatusCodes.Status401Unauthorized;
+        Response.StatusCode = StatusCodes.Status403Forbidden;
+        Log.Information($"{HttpContext.TraceIdentifier}: Failed to verify admin secret ({Response.StatusCode}).");
+        return new ErrorDTO()
             {
                 ErrorText = "Failed to verify admin secret.",
                 ErrorCode = ErrorCodes.BAD_ADMIN_SECRET
