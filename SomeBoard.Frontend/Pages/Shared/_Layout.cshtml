@@ -32,7 +32,9 @@
                         {
                             <li>
                                 <a class="dropdown-item @((string?)ViewContext.RouteData.Values[Assets.BOARDS_QUERY_NAME] == board.Query ? "active" : "")"
-                                   aria-current="page" href="/?@Assets.BOARDS_QUERY_NAME=@board.Query">@board.Name</a>
+                                   aria-current="page" href="/?@Assets.BOARDS_QUERY_NAME=@board.Query">
+                                    @(board.Name ?? board.Query)
+                                </a>
                             </li>
                         }
                     </ul>
