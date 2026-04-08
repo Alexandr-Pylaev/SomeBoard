@@ -23,6 +23,8 @@ public class IndexModel : PageModel
     public const string NO_POST_FOUND_TEXT = "This board is empty.";
     public const string ERROR_QUERY = "error";
     public const string ALERT_QUERY = "info";
+    public const string PAGE_QUERY = "page";
+    public const int PAGE_SIZE = 25;
     
     RestClientOptions BackendOptions =>
         new(((Board?)ViewData[Assets.BOARD_DATANAME])!.BackendUrl
@@ -38,16 +40,24 @@ public class IndexModel : PageModel
         _ApplyQueryAlerts(ALERT_QUERY);
         _ApplyQueryAlerts(ERROR_QUERY);
         if (!_SetBoard()) return;
-        
-        var result = _MakeRequest(new RestClient(BackendOptions), "/posting/post", Method.Get, CreatePost);
+        int offset = 0;
+        HttpContext.Request.Query.TryGetValue(PAGE_QUERY, out var offsetStringValues);
+        var result = _MakeRequest(new RestClient(BackendOptions), "/posting/post?"
+                                                                  +(offsetStringValues.Count > 0 ? 
+                                                                      $"position={(
+                                                                          int.TryParse(offsetStringValues.First(), out offset) ? offset : 0)*PAGE_SIZE}&" : "") +
+                                                                      $"count={PAGE_SIZE}",
+            Method.Get, CreatePost);
         if (result is null) return;
         ServerPostDTO[]? posts = _GetResult<ServerPostDTO[]>(result);
         if (posts is null) return;
-        
         ViewData.Add(POSTS_DATANAME, posts);
         if (posts.Length == 0)
         {
-            _SetPageBanner(NO_POST_FOUND_TEXT, "We think this board is empty. Maybe it's time to post something.");
+            _SetPageBanner(NO_POST_FOUND_TEXT,
+                offset != 0
+                    ? "Maybe it's empty because you are on wrong page?"
+                    : "We think this board is empty. Maybe it's time to post something.");
         }
         else _SetPageBanner(null, null);
     }
