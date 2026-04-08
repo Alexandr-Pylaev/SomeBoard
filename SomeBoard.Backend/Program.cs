@@ -11,17 +11,6 @@ namespace SomeBoard.Backend;
 
 public class Program
 {
-    public const string CONFIG_PATH = "SomeBoard";
-    public const string POSTING_CONNECTIONSTRING_PATH = $"{CONFIG_PATH}:Posting:ConnectionString";
-    public const string POSTING_DATABASE_PATH = $"{CONFIG_PATH}:Posting:Database";
-    public const string POSTING_USERNAME_PATH = $"{CONFIG_PATH}:Posting:Username";
-    public const string POSTING_PASSWORD_PATH = $"{CONFIG_PATH}:Posting:Password";
-    public const string POSTING_PASSFILE_PATH = $"{CONFIG_PATH}:Posting:PasswordFile";
-    public const string POSTING_HOST_PATH = $"{CONFIG_PATH}:Posting:Host";
-    public const string POSTING_PORT_PATH = $"{CONFIG_PATH}:Posting:Port";
-    public const string POSTING_ADMIN_SECRETFILE_PATH = $"{CONFIG_PATH}:Posting:AdminSecretFile";
-    [Pure]
-    public static string BuildPath(string name, string path = CONFIG_PATH) => $"{path}:{name}";
     
     public static void Main(string[] args)
     {
@@ -68,33 +57,33 @@ public class Program
 
     private static void AddPostingContext(WebApplicationBuilder builder)
     {
-        var conString = builder.Configuration.GetValue<string>(POSTING_CONNECTIONSTRING_PATH);
+        var conString = builder.Configuration.GetValue<string>(Assets.POSTING_CONNECTIONSTRING_PATH);
         bool usingPassfile = false;
         if (string.IsNullOrEmpty(conString))
         {
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder()
             {
-                Database = builder.Configuration.GetValue<string>(POSTING_DATABASE_PATH, "someboard"),
-                Host = builder.Configuration.GetValue<string?>(POSTING_HOST_PATH, null),
-                Port = builder.Configuration.GetValue<int>(POSTING_PORT_PATH, 5432),
-                Username = builder.Configuration.GetValue<string?>(POSTING_USERNAME_PATH, null),
+                Database = builder.Configuration.GetValue<string>(Assets.POSTING_DATABASE_PATH, "someboard"),
+                Host = builder.Configuration.GetValue<string?>(Assets.POSTING_HOST_PATH, null),
+                Port = builder.Configuration.GetValue<int>(Assets.POSTING_PORT_PATH, 5432),
+                Username = builder.Configuration.GetValue<string?>(Assets.POSTING_USERNAME_PATH, null),
                 
                 Passfile = new Func<string?>(() =>
                 {
-                    var a = builder.Configuration.GetValue<string?>(POSTING_PASSFILE_PATH, null);
+                    var a = builder.Configuration.GetValue<string?>(Assets.POSTING_PASSFILE_PATH, null);
                     usingPassfile = a is not null;
                     return a;
                 }).Invoke(),
                 Password = new Func<string?>(() =>
                 {
                     if (usingPassfile) return null;
-                    return builder.Configuration.GetValue<string?>(POSTING_PASSWORD_PATH, null);
+                    return builder.Configuration.GetValue<string?>(Assets.POSTING_PASSWORD_PATH, null);
                 }).Invoke()
             };
-            if (connectionStringBuilder.Host is null) throw MissingValue(POSTING_HOST_PATH);
-            if (connectionStringBuilder.Username is null) throw MissingValue(POSTING_USERNAME_PATH);
+            if (connectionStringBuilder.Host is null) throw MissingValue(Assets.POSTING_HOST_PATH);
+            if (connectionStringBuilder.Username is null) throw MissingValue(Assets.POSTING_USERNAME_PATH);
             if (connectionStringBuilder.Passfile is null && connectionStringBuilder.Password is null)
-                throw MissingValue($"{POSTING_PASSFILE_PATH} and {POSTING_PASSWORD_PATH}");
+                throw MissingValue($"{Assets.POSTING_PASSFILE_PATH} and {Assets.POSTING_PASSWORD_PATH}");
             conString = connectionStringBuilder.ToString();
         }
 
@@ -112,7 +101,7 @@ public class Program
     public const string AdminSecretsDefaultFile = "adminsecrets.txt";
     public static bool VerifyAdminSecret(string secret, IConfiguration config)
     {
-        return File.ReadAllText(config.GetValue<string>(POSTING_ADMIN_SECRETFILE_PATH, 
+        return File.ReadAllText(config.GetValue<string>(Assets.POSTING_ADMIN_SECRETFILE_PATH, 
             Path.Combine(Directory.GetCurrentDirectory(), AdminSecretsDefaultFile))) == secret;
     }
 }

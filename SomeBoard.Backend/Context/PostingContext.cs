@@ -8,16 +8,20 @@ namespace SomeBoard.Backend.Context;
 public class PostingContext : DbContext
 {
     public DbSet<PostModel> Posts { get; set; }
+    
+    public long PostCount { get; private set; }
 
     public PostingContext(DbContextOptions options) : base(options)
     {
         Database.Migrate();
+        PostCount = Posts.Count(x => !x.Deleted);
     }
 
     public async Task<PostModel> PublishAsync(string author, string message, DateTime dateTime, CancellationToken token)
     {
         PostModel model = new(author, message, dateTime);
         model = (await Posts.AddAsync(model, token)).Entity;
+        PostCount++;
         await SaveChangesAsync(token);
         Log.Verbose($"Published new post {model.PostId} by {author}");
         return model;
@@ -34,6 +38,7 @@ public class PostingContext : DbContext
         if (post is null) return post;
         post?.DeletePost();
         await SaveChangesAsync(token);
+        PostCount--;
         Log.Verbose($"Deleted post {id}.");
         return post;
     }

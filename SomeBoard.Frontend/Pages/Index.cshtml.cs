@@ -20,6 +20,7 @@ public class IndexModel : PageModel
     public const string PAGEBANNER_TEXT_DATANAME = "PageBannerText";
     public const string POSTS_DATANAME = "Posts";
     public const string PAGE_DATANAME = "Page";
+    public const string MAX_PAGE_DATANAME = "MaxPage";
     public const string IS_INPUT_HIDDEN_DATANAME = "IsInputHidden";
     public const string NO_POST_FOUND_TEXT = "This board is empty.";
     public const string ERROR_QUERY = "error";
@@ -38,12 +39,27 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
+        var result = _MakeRequest(new RestClient(BackendOptions), "/posting/board", Method.Get);
+        if (result is null) return;
+        
+        BoardInfoDTO? boardInfo = _GetResult<BoardInfoDTO>(result);
+        if (boardInfo is null) return;
+        
+        ViewData.Add(MAX_PAGE_DATANAME, boardInfo.PostCount);
+        
+        ViewData[Assets.BOARD_DATANAME] = new Board()
+        {
+            Name = boardInfo.Name,
+            Description = boardInfo.Description
+        };
+        
         _ApplyQueryAlerts(ALERT_QUERY);
         _ApplyQueryAlerts(ERROR_QUERY);
         if (!_SetBoard()) return;
         int page = 0;
         HttpContext.Request.Query.TryGetValue(PAGE_QUERY, out var pageStringValues);
-        var result = _MakeRequest(new RestClient(BackendOptions), "/posting/post?"
+        
+        result = _MakeRequest(new RestClient(BackendOptions), "/posting/post?"
                                                                   +(pageStringValues.Count > 0 ? 
                                                                       $"position={(
                                                                           int.TryParse(pageStringValues.First(), out page) ? page : 0)*PAGE_SIZE}&" : "") +
@@ -230,6 +246,9 @@ public class IndexModel : PageModel
     private bool _SetBoard()
     {
         var setBoard = Assets.FailedBoard;
+        var curBoard = (Board?)ViewData[Assets.BOARD_DATANAME];
+        setBoard.Name = curBoard?.Name;
+        setBoard.Description = curBoard?.Description;
         try
         {
             var isQueryPresent = HttpContext.Request.Query.TryGetValue(Assets.BOARDS_QUERY_NAME, out var query);

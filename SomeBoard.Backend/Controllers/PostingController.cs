@@ -30,6 +30,16 @@ public class PostingController : ControllerBase
             .ToDTO()).ToArray());
     }
     
+    [HttpGet]
+    [ActionName("Board")]
+    public BoardInfoDTO Board(PostingContext context)
+    {
+        Log.Information($"{HttpContext.TraceIdentifier}: Requested board info.");
+        return IDTODeserializable<BoardInfoDTO>.
+            Convert<BoardInfo>(Assets.Singleton.BoardInfo)!
+            .ToDTO().SetPostCount(context.PostCount);
+    }
+    
     [HttpPost]
     [ActionName("Post")]
     public ServerPostDTO Publish(CreatePostDTO input, PostingContext context)
