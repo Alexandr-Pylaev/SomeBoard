@@ -2,8 +2,10 @@ using System.Net;
 using System.Text.Json;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Options;
 using RestSharp;
 using Serilog;
 using SomeBoard.Shared.Posting;
@@ -60,7 +62,7 @@ public class IndexModel : PageModel
         {
             try
             {
-                if (_ProcessErrorAsErrorDTO(result))
+                if (_ProcessJSONError(result))
                 {
                     Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
                 }
@@ -74,6 +76,44 @@ public class IndexModel : PageModel
 
         return default(T);
     }
+
+    private bool _ProcessProblemDetailsError(RestResponse response)
+    {
+        ProblemDetails? error = null;
+        try
+        {
+            error = JsonSerializer.Deserialize<ProblemDetails>(response.Content ?? "{}", SerializationOptions);
+        }
+        catch (ArgumentNullException _) { }
+
+        if (error is null || error.Status == null) return false;
+        _PrintError(new ErrorDTO()
+        {
+            ErrorCode = "SERVER_HTTP_ERROR",
+            ErrorText = error.Title!
+        });
+        return true;
+    }
+    
+    private bool _ProcessValidationProblemDetailsError(RestResponse response)
+    {
+        ValidationProblemDetails? error = null;
+        try
+        {
+            error = JsonSerializer.Deserialize<ValidationProblemDetails>(response.Content ?? "{}", SerializationOptions);
+        }
+        catch (ArgumentNullException _) { }
+        if (error is null || error.Errors.Count <= 0) return false;
+        foreach (var err in error.Errors)
+        {
+            _PrintError(new ErrorDTO()
+            {
+                ErrorCode = "SERVER_HTTP_ERROR",
+                ErrorText = string.Join(" ", err.Value)
+            });
+        }
+        return true;
+    }
     
     private bool _ProcessErrorAsErrorDTO(RestResponse result)
     {
@@ -83,10 +123,14 @@ public class IndexModel : PageModel
             error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}", SerializationOptions);
         }
         catch (ArgumentNullException _) { }
-        if (error is null || error.ErrorCode == null) return false;
+        if (error is null || error.ErrorCode is null) return false;
         _PrintError(error);
         return true;
     }
+
+    private bool _ProcessJSONError(RestResponse response) => _ProcessValidationProblemDetailsError(response) ||
+                                                             _ProcessProblemDetailsError(response) ||
+                                                             _ProcessErrorAsErrorDTO(response);
 
     private void _PrintError(ErrorDTO error)
     {
@@ -138,9 +182,9 @@ public class IndexModel : PageModel
                     return null;
                 }
 
-                if (!_ProcessErrorAsErrorDTO(result))
+                if (!_ProcessJSONError(result))
                 {
-                    Log.Error($"Backend throw {result.StatusCode}, but not supplied it with ErrorDTO error.");
+                    Log.Error($"Backend throw {result.StatusCode}, but not supplied it with JSON error.");
                     _PrintError(new ErrorDTO()
                     {
                         ErrorText = "Request to server failed.",
