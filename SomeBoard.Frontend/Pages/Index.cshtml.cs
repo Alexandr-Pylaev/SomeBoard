@@ -1,7 +1,9 @@
 using System.Net;
 using System.Text.Json;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Routing;
 using RestSharp;
 using Serilog;
 using SomeBoard.Shared.Posting;
@@ -216,9 +218,9 @@ public class IndexModel : PageModel
             var post = JsonSerializer.Deserialize<ServerPostDTO>(result.Content ?? "{}",jsonSerializerOptions);
             if (post.PostId != Guid.Empty)
             {
-                return Redirect($"/?{ALERT_QUERY}="+"Post created.");
+                return RedirectWithAlert(ALERT_QUERY, "Post created.");
             }
-            else return Redirect($"/?{ERROR_QUERY}="+"Post cannot be created: Server responded with non-existing post.");
+            else return RedirectWithAlert(ERROR_QUERY, "Post cannot be created: Server responded with non-existing post.");
         }
         catch (JsonException _)
         {
@@ -228,15 +230,20 @@ public class IndexModel : PageModel
                 if (error == new ErrorDTO()) throw;
                 Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
                 Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
-                return Redirect($"/?{ERROR_QUERY}="+$"Post cannot be created: Error: {error.ErrorText}\nError code: {error.ErrorCode}");
+                return RedirectWithAlert(ERROR_QUERY, $"Post cannot be created: Error: {error.ErrorText}\nError code: {error.ErrorCode}");
             }
             catch (JsonException ex2)
             {
                 Console.WriteLine(ex2);
-                return Redirect($"/?{ERROR_QUERY}="+"Post cannot be created: Received invalid respond from server.");
+                return RedirectWithAlert(ERROR_QUERY, "Post cannot be created: Received invalid respond from server.");
             }
         }
 
         return Redirect("/");
+    }
+
+    private IActionResult RedirectWithAlert(string query,string postCreated)
+    {
+        return Redirect($"/?{query}="+HttpUtility.UrlEncode(postCreated));
     }
 }
