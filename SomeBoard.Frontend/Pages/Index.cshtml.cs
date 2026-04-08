@@ -37,7 +37,7 @@ public class IndexModel : PageModel
         _ApplyQueryAlerts(ERROR_QUERY);
         if (!_SetBoard()) return;
         
-        var result = _MakeRequest(new RestClient(BackendOptions), "/posting/post", Method.Post, CreatePost);
+        var result = _MakeRequest(new RestClient(BackendOptions), "/posting/post", Method.Get, CreatePost);
         if (result is null) return;
         ServerPostDTO[]? posts = _GetResult<ServerPostDTO[]>(result);
         if (posts is null) return;
