@@ -32,6 +32,8 @@ public class Program
 
         builder.Services.AddControllers();
         
+        Assets.Singleton.Initialize(builder.Configuration);
+        
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
