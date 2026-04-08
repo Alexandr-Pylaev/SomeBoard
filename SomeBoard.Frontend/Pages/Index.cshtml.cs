@@ -230,7 +230,6 @@ public class IndexModel : PageModel
         var setBoard = Assets.FailedBoard;
         try
         {
-            _SetPageBanner(NO_POST_FOUND_TEXT, "Because this board doesn't exists.");
             var isQueryPresent = HttpContext.Request.Query.TryGetValue(Assets.BOARDS_QUERY_NAME, out var query);
             if (query.Count <= 0)
             {
@@ -240,6 +239,7 @@ public class IndexModel : PageModel
             else if (query.Count > 1)
             {
                 _AddError("Multiple addresses was set.");
+                _SetPageBanner(NO_POST_FOUND_TEXT, "Because this board doesn't exists.");
                 _HideInput();
                 return false;
             }
@@ -256,6 +256,7 @@ public class IndexModel : PageModel
             if (setBoard?.Equals(Assets.FailedBoard) ?? false)
             {
                 _AddError("Unknown board.");
+                _SetPageBanner(NO_POST_FOUND_TEXT, "Because this board doesn't exists.");
             }
             _HideInput();
             return false;
