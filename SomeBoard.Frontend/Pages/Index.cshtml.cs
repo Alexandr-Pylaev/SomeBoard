@@ -21,119 +21,141 @@ public class IndexModel : PageModel
     public const string NO_POST_FOUND_TEXT = "This board is empty.";
     public const string ERROR_QUERY = "error";
     public const string ALERT_QUERY = "info";
-    private readonly ILogger<IndexModel> _logger;
-
-    public IndexModel(ILogger<IndexModel> logger)
+    
+    RestClientOptions BackendOptions =>
+        new(((Board?)ViewData[Assets.BOARD_DATANAME])!.BackendUrl
+            ?? throw new NullReferenceException("Cannot access backend: Backend URL is null."));
+    JsonSerializerOptions SerializationOptions = new ()
     {
-        _logger = logger;
-    }
+        PropertyNameCaseInsensitive = true
+    };
+    [BindProperty] public CreatePostDTO CreatePost { get; set; } = new();
 
     public void OnGet()
     {
-        var isQueryPresent = HttpContext.Request.Query.TryGetValue(ALERT_QUERY, out var alertQuery);
-        if (isQueryPresent)
-        {
-            foreach (var val in alertQuery)
-            {
-                if (val is not null) AddInfo(val);
-            }
-        }
+        _ApplyQueryAlerts(ALERT_QUERY);
+        _ApplyQueryAlerts(ERROR_QUERY);
+        if (!_SetBoard()) return;
         
-        isQueryPresent = HttpContext.Request.Query.TryGetValue(ERROR_QUERY, out var errorQuery);
-        if (isQueryPresent)
+        var result = _MakeRequest(new RestClient(BackendOptions), "/posting/post", Method.Post, CreatePost);
+        if (result is null) return;
+        ServerPostDTO[]? posts = _GetResult<ServerPostDTO[]>(result);
+        if (posts is null) return;
+        
+        ViewData.Add(POSTS_DATANAME, posts);
+        if (posts.Length == 0)
         {
-            foreach (var val in errorQuery)
-            {
-                if (val is not null) AddError(val);
-            }
+            _SetPageBanner(NO_POST_FOUND_TEXT, "We think this board is empty. Maybe it's time to post something.");
         }
-        if (!SetBoard()) return;
-        var client = new RestClient(
-            new RestClientOptions(((Board?)ViewData[Assets.BOARD_DATANAME])!.BackendUrl
-                                  ?? throw new NullReferenceException("Cannot access backend: Backend URL is null.")));
-        RestResponse result;
-        if (MakeRequest(client, out result, "/posting/post")) return;
+        else _SetPageBanner(null, null);
+    }
+
+    private T? _GetResult<T>(RestResponse result)
+    {
         try
         {
-            var posts = JsonSerializer.Deserialize<ServerPostDTO[]>(result.Content ?? "[]", jsonSerializerOptions) ?? [];
-            ViewData.Add(POSTS_DATANAME, posts);
-            if (posts.Length == 0)
-            {
-                SetPageBanner(NO_POST_FOUND_TEXT, "We think this board is empty. Maybe it's time to post something.");
-            }
-            else SetPageBanner(null, null);
+            return JsonSerializer.Deserialize<T>(result.Content ?? JsonSerializer.Serialize(default(T)), SerializationOptions) ?? default(T);
         }
         catch (JsonException _)
         {
             try
             {
-                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",jsonSerializerOptions);
+                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",SerializationOptions);
                 if (error == new ErrorDTO()) throw;
-                AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
-                SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
+                _AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
                 Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
                 Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
             }
             catch (JsonException ex2)
             {
-                AddError("Received invalid respond from server.");
+                _AddError("Received invalid respond from server.");
                 Console.WriteLine(ex2);
+            }
+        }
+
+        return default(T);
+    }
+
+    // When form is used
+    public IActionResult OnPost()
+    {
+        if (!_SetBoard()) return Redirect("/");
+        var result = _MakeRequest(new RestClient(BackendOptions), "/posting/post", Method.Post, CreatePost);
+        if (result is null) return Redirect("/");
+        ServerPostDTO? post = _GetResult<ServerPostDTO>(result);
+        if (post is null) return _RedirectWithAlert(ERROR_QUERY, "Failed to create post.");
+        if (post.PostId != Guid.Empty)
+        {
+            return _RedirectWithAlert(ALERT_QUERY, "Post created.");
+        }
+        else return _RedirectWithAlert(ERROR_QUERY, "Post cannot be created: Server responded with non-existing post.");
+    }
+
+    private void _ApplyQueryAlerts(string query)
+    {
+        var isQueryPresent = HttpContext.Request.Query.TryGetValue(query, out var alertQuery);
+        if (isQueryPresent)
+        {
+            foreach (var val in alertQuery)
+            {
+                if (val is not null) _AddAlert(val, query);
             }
         }
     }
     
-    JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
+    private RestResponse? _MakeRequest(RestClient client, string? uri, Method method = Method.Get, object? body = null)
     {
-        PropertyNameCaseInsensitive = true
-    };
-
-    private bool MakeRequest(RestClient client, out RestResponse result, string? uri, Method method = Method.Get, object? body = null)
-    {
+        RestResponse result;
         try
         {
-            var req = new RestRequest(uri, method);
-            if (body is not null) req.AddJsonBody(body);
-            result = client.Execute(req);
+            result = _SendRequest(client, uri, method, body);
             if (!result.IsSuccessful)
             {
                 if (result.StatusCode == HttpStatusCode.NotFound)
                 {
-                    AddError("Server not found.");
-                    SetPageBanner(NO_POST_FOUND_TEXT, "Server not found.");
-                    HideInput();
+                    _AddError("Server not found.");
+                    _SetPageBanner(NO_POST_FOUND_TEXT, "Server not found.");
+                    _HideInput();
                     Log.Error("Backend /posting/post path was not found. Something wrong with config or server.");
-                    return true;
+                    return null;
                 }
-                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",jsonSerializerOptions);
+                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",SerializationOptions);
                 if (error == new ErrorDTO())
                 {
                     Log.Error($"Backend throw {result.StatusCode}, but not supplied it with error.");
-                    return true;
+                    return null;
                 }
-                AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
-                SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
+                _AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
+                _SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
                 Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            AddError("Server not responding.");
-            SetPageBanner(NO_POST_FOUND_TEXT, "Failed to connect to server.");
-            HideInput();
-            result = null;
-            return true;
+            _AddError("Server not responding.");
+            _SetPageBanner(NO_POST_FOUND_TEXT, "Failed to connect to server.");
+            _HideInput();
+            return null;
         }
 
-        return false;
+        return result;
     }
 
-    private bool SetBoard()
+    private static RestResponse _SendRequest(RestClient client, string? uri, Method method, object? body)
+    {
+        var req = new RestRequest(uri, method);
+        if (body is not null) req.AddJsonBody(body);
+        var result = client.Execute(req);
+        return result;
+    }
+
+    private bool _SetBoard()
     {
         var setBoard = Assets.FailedBoard;
         try
         {
-            SetPageBanner(NO_POST_FOUND_TEXT, "Because this board doesn't exists.");
+            _SetPageBanner(NO_POST_FOUND_TEXT, "Because this board doesn't exists.");
             var isQueryPresent = HttpContext.Request.Query.TryGetValue(Assets.BOARDS_QUERY_NAME, out var query);
             if (query.Count <= 0)
             {
@@ -142,8 +164,8 @@ public class IndexModel : PageModel
             }
             else if (query.Count > 1)
             {
-                AddError("Multiple addresses was set.");
-                HideInput();
+                _AddError("Multiple addresses was set.");
+                _HideInput();
                 return false;
             }
 
@@ -158,9 +180,9 @@ public class IndexModel : PageModel
 
             if (setBoard?.Equals(Assets.FailedBoard) ?? false)
             {
-                AddError("Unknown board.");
+                _AddError("Unknown board.");
             }
-            HideInput();
+            _HideInput();
             return false;
         }
         finally
@@ -169,28 +191,28 @@ public class IndexModel : PageModel
         }
     }
 
-    private void HideInput()
+    private void _HideInput()
     {
         ViewData.Add(IS_INPUT_HIDDEN_DATANAME, true);
     }
 
-    private void SetPageBanner(string? title, string? text)
+    private void _SetPageBanner(string? title, string? text)
     {
         ViewData[PAGEBANNER_TITLE_DATANAME] = title;
         ViewData[PAGEBANNER_TEXT_DATANAME] = text;
     }
 
-    private void AddError(string error)
+    private void _AddError(string error)
     {
-        AddAlert(error, ERRORS_DATANAME);
+        _AddAlert(error, ERRORS_DATANAME);
     }
     
-    private void AddInfo(string info)
+    private void _AddInfo(string info)
     {
-        AddAlert(info, ALERTS_DATANAME);
+        _AddAlert(info, ALERTS_DATANAME);
     }
     
-    private void AddAlert(string alert, string dataName)
+    private void _AddAlert(string alert, string dataName)
     {
         if (ViewData.TryGetValue(dataName, out var ls))
         {
@@ -203,46 +225,8 @@ public class IndexModel : PageModel
                 throw new InvalidOperationException($"Alert list {dataName} cannot be added or updated.");
         }
     }
-
-    [BindProperty] public CreatePostDTO CreatePost { get; set; } = new();
-    public IActionResult OnPost()
-    {
-        if (!SetBoard()) return Redirect("/");
-        var client = new RestClient(
-            new RestClientOptions(((Board?)ViewData[Assets.BOARD_DATANAME])!.BackendUrl
-                                  ?? throw new NullReferenceException("Cannot access backend: Backend URL is null.")));
-        RestResponse result;
-        if (MakeRequest(client, out result, "/posting/post", Method.Post, CreatePost)) return Redirect("/");
-        try
-        {
-            var post = JsonSerializer.Deserialize<ServerPostDTO>(result.Content ?? "{}",jsonSerializerOptions);
-            if (post.PostId != Guid.Empty)
-            {
-                return RedirectWithAlert(ALERT_QUERY, "Post created.");
-            }
-            else return RedirectWithAlert(ERROR_QUERY, "Post cannot be created: Server responded with non-existing post.");
-        }
-        catch (JsonException _)
-        {
-            try
-            {
-                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",jsonSerializerOptions);
-                if (error == new ErrorDTO()) throw;
-                Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
-                Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
-                return RedirectWithAlert(ERROR_QUERY, $"Post cannot be created: Error: {error.ErrorText}\nError code: {error.ErrorCode}");
-            }
-            catch (JsonException ex2)
-            {
-                Console.WriteLine(ex2);
-                return RedirectWithAlert(ERROR_QUERY, "Post cannot be created: Received invalid respond from server.");
-            }
-        }
-
-        return Redirect("/");
-    }
-
-    private IActionResult RedirectWithAlert(string query,string postCreated)
+    
+    private IActionResult _RedirectWithAlert(string query,string postCreated)
     {
         return Redirect($"/?{query}="+HttpUtility.UrlEncode(postCreated));
     }
