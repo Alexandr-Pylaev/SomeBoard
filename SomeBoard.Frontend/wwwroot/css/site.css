@@ -13,6 +13,12 @@
 html {
   font-size: 14px;
 }
+.page-item {
+  height: fit-content;
+}
+.page-link {
+  margin-bottom: 0;
+}
 
 @media (min-width: 768px) {
   html {
