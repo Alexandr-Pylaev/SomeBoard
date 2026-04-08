@@ -39,23 +39,25 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
+        _ApplyQueryAlerts(ALERT_QUERY);
+        _ApplyQueryAlerts(ERROR_QUERY);
+        if (!_SetBoard()) return;
+        
         var result = _MakeRequest(new RestClient(BackendOptions), "/posting/board", Method.Get);
         if (result is null) return;
         
         BoardInfoDTO? boardInfo = _GetResult<BoardInfoDTO>(result);
         if (boardInfo is null) return;
-        
+
+        var curBoard = (Board?)ViewData[Assets.BOARD_DATANAME];
+        if (curBoard is not null)
+        {
+            curBoard.Name = string.IsNullOrEmpty(curBoard.Name) ? boardInfo.Name : curBoard.Name;
+            curBoard.Description = string.IsNullOrEmpty(curBoard.Description) ? boardInfo.Description : curBoard.Description;
+        }
+
         ViewData.Add(MAX_PAGE_DATANAME, boardInfo.PostCount);
         
-        ViewData[Assets.BOARD_DATANAME] = new Board()
-        {
-            Name = boardInfo.Name,
-            Description = boardInfo.Description
-        };
-        
-        _ApplyQueryAlerts(ALERT_QUERY);
-        _ApplyQueryAlerts(ERROR_QUERY);
-        if (!_SetBoard()) return;
         int page = 0;
         HttpContext.Request.Query.TryGetValue(PAGE_QUERY, out var pageStringValues);
         
