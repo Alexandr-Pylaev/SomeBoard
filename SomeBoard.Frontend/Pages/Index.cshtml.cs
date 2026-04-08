@@ -56,7 +56,7 @@ public class IndexModel : PageModel
             curBoard.Description = string.IsNullOrEmpty(curBoard.Description) ? boardInfo.Description : curBoard.Description;
         }
 
-        ViewData.Add(MAX_PAGE_DATANAME, boardInfo.PostCount);
+        ViewData.Add(MAX_PAGE_DATANAME, boardInfo.PostCount/PAGE_SIZE);
         
         int page = 0;
         HttpContext.Request.Query.TryGetValue(PAGE_QUERY, out var pageStringValues);
