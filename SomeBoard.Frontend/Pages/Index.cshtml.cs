@@ -48,7 +48,7 @@ public class IndexModel : PageModel
                                                                       $"position={(
                                                                           int.TryParse(pageStringValues.First(), out page) ? page : 0)*PAGE_SIZE}&" : "") +
                                                                       $"count={PAGE_SIZE}",
-            Method.Get, CreatePost);
+            Method.Get);
         ViewData.Add(PAGE_DATANAME, page);
         if (result is null) return;
         ServerPostDTO[]? posts = _GetResult<ServerPostDTO[]>(result);
