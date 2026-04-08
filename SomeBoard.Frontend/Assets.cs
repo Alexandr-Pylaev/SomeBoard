@@ -44,7 +44,10 @@ public class Assets
             {
                 Log.Error($"Failed to update board: {response.StatusCode}");
             }
-            var boardInfo = JsonSerializer.Deserialize<BoardInfoDTO>(response.Content ?? "{}");
+            var boardInfo = JsonSerializer.Deserialize<BoardInfoDTO>(response.Content ?? "{}", new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true
+            });
             if (boardInfo is null || boardInfo?.Name is null) return;
             board.Name = string.IsNullOrEmpty(board.Name) ? boardInfo.Name : board.Name;
             board.Description = string.IsNullOrEmpty(board.Description) ? boardInfo.Description : board.Description;
