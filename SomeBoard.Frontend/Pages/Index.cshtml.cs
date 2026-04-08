@@ -60,11 +60,10 @@ public class IndexModel : PageModel
         {
             try
             {
-                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",SerializationOptions);
-                if (error == new ErrorDTO()) throw;
-                _AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
-                Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
-                Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
+                if (_ProcessErrorAsErrorDTO(result))
+                {
+                    Log.Error($"Backend throw error, but status code is {result.StatusCode}.");
+                }
             }
             catch (JsonException ex2)
             {
@@ -74,6 +73,25 @@ public class IndexModel : PageModel
         }
 
         return default(T);
+    }
+    
+    private bool _ProcessErrorAsErrorDTO(RestResponse result)
+    {
+        ErrorDTO? error = null;
+        try
+        {
+            error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}", SerializationOptions);
+        }
+        catch (ArgumentNullException _) { }
+        if (error is null || error.ErrorCode == null) return false;
+        _PrintError(error);
+        return true;
+    }
+
+    private void _PrintError(ErrorDTO error)
+    {
+        _AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
+        Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
     }
 
     // When form is used
@@ -119,15 +137,18 @@ public class IndexModel : PageModel
                     Log.Error("Backend /posting/post path was not found. Something wrong with config or server.");
                     return null;
                 }
-                var error = JsonSerializer.Deserialize<ErrorDTO>(result.Content ?? "{}",SerializationOptions);
-                if (error == new ErrorDTO())
+
+                if (!_ProcessErrorAsErrorDTO(result))
                 {
-                    Log.Error($"Backend throw {result.StatusCode}, but not supplied it with error.");
-                    return null;
+                    Log.Error($"Backend throw {result.StatusCode}, but not supplied it with ErrorDTO error.");
+                    _PrintError(new ErrorDTO()
+                    {
+                        ErrorText = "Request to server failed.",
+                        ErrorCode = "SERVER_HTTP_ERROR"
+                    });
                 }
-                _AddError($"Error: {error.ErrorText}\nError code: {error.ErrorCode}");
-                _SetPageBanner(NO_POST_FOUND_TEXT, "Server returned errors.");
-                Log.Warning($"Server throw error: {error.ErrorText} ({error.ErrorCode})");
+
+                return null;
             }
         }
         catch (Exception ex)

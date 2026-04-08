@@ -4,4 +4,6 @@ public class ErrorDTO
 {
     public string ErrorText { get; set; }
     public string ErrorCode { get; set; }
+
+    public static ErrorDTO Empty => new ErrorDTO() { ErrorText = "", ErrorCode = "" };
 }
