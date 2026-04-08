@@ -75,6 +75,7 @@
         }
         @{
             var pageNum = (int?) ViewData[IndexModel.PAGE_DATANAME] ?? 0;
+            var pageMax = (long?) ViewData[IndexModel.MAX_PAGE_DATANAME] ?? 0;
         }
         <div class="text-center d-flex" style="padding-top: 0.5rem; margin-bottom: 0">
             <ul class="pagination text-center mx-auto" style="margin-bottom: 0">
@@ -85,7 +86,10 @@
                                                           }"
                                          href="/?page=@(Math.Max(pageNum-1, 0))">&laquo;</a></li>
                 <li class="page-item active" style="margin-bottom: 0"><p class="page-link bg-body-tertiary">@pageNum</p></li>
-                <li class="page-item"><a class="page-link" href="/?page=@(pageNum+1)">&raquo;</a></li>
+                <li class="page-item @if (pageNum+1 > pageMax)
+                                                          {
+                                                          @("disabled")
+                                                          }"><a class="page-link" href="/?page=@(Math.Min(pageNum+1, pageMax))">&raquo;</a></li>
             </ul>
         </div>
     </nav>
