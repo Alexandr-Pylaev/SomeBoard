@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using SomeBoard.Backend.Context;
 using SomeBoard.Backend.Models;
@@ -13,12 +14,20 @@ public class PostingController : ControllerBase
 {
     [HttpGet]
     [ActionName("Post")]
-    public ServerPostDTO[] Fetch(int position, PostingContext context)
+    public JsonResult Fetch(int position, int count, PostingContext context)
     {
-        Log.Information($"{HttpContext.TraceIdentifier}: Fetched 25 posts from position {position}.");
-        return context.Fetch(position, 25).Select(x => IDTODeserializable<ServerPostDTO>
+        Log.Information($"{HttpContext.TraceIdentifier}: Fetched {count} posts from position {position}.");
+        if (count > 100) {
+            Log.Warning($"{HttpContext.TraceIdentifier}: Fetched too many posts ({count} > 100)");
+            return new JsonResult(new ErrorDTO()
+            {
+                ErrorText = "Requested too many posts.",
+                ErrorCode = ErrorCodes.TOO_MANY_POSTS
+            });
+        }
+        return new JsonResult(context.Fetch(position, count).Select(x => IDTODeserializable<ServerPostDTO>
             .Convert<PostModel>(x)!
-            .ToDTO()).ToArray();
+            .ToDTO()).ToArray());
     }
     
     [HttpPost]
