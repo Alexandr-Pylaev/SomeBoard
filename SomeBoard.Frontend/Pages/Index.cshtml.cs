@@ -19,6 +19,7 @@ public class IndexModel : PageModel
     public const string PAGEBANNER_TITLE_DATANAME = "PageBannerTitle";
     public const string PAGEBANNER_TEXT_DATANAME = "PageBannerText";
     public const string POSTS_DATANAME = "Posts";
+    public const string PAGE_DATANAME = "Page";
     public const string IS_INPUT_HIDDEN_DATANAME = "IsInputHidden";
     public const string NO_POST_FOUND_TEXT = "This board is empty.";
     public const string ERROR_QUERY = "error";
@@ -40,14 +41,15 @@ public class IndexModel : PageModel
         _ApplyQueryAlerts(ALERT_QUERY);
         _ApplyQueryAlerts(ERROR_QUERY);
         if (!_SetBoard()) return;
-        int offset = 0;
-        HttpContext.Request.Query.TryGetValue(PAGE_QUERY, out var offsetStringValues);
+        int page = 0;
+        HttpContext.Request.Query.TryGetValue(PAGE_QUERY, out var pageStringValues);
         var result = _MakeRequest(new RestClient(BackendOptions), "/posting/post?"
-                                                                  +(offsetStringValues.Count > 0 ? 
+                                                                  +(pageStringValues.Count > 0 ? 
                                                                       $"position={(
-                                                                          int.TryParse(offsetStringValues.First(), out offset) ? offset : 0)*PAGE_SIZE}&" : "") +
+                                                                          int.TryParse(pageStringValues.First(), out page) ? page : 0)*PAGE_SIZE}&" : "") +
                                                                       $"count={PAGE_SIZE}",
             Method.Get, CreatePost);
+        ViewData.Add(PAGE_DATANAME, page);
         if (result is null) return;
         ServerPostDTO[]? posts = _GetResult<ServerPostDTO[]>(result);
         if (posts is null) return;
@@ -55,7 +57,7 @@ public class IndexModel : PageModel
         if (posts.Length == 0)
         {
             _SetPageBanner(NO_POST_FOUND_TEXT,
-                offset != 0
+                page != 0
                     ? "Maybe it's empty because you are on wrong page?"
                     : "We think this board is empty. Maybe it's time to post something.");
         }
