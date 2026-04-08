@@ -33,7 +33,7 @@
                 var post = posts[b + i];
                 
                 <div class="card" style="width: 22rem; margin: 1rem">
-                    <div class="card-body">
+                    <div class="card-body text-start">
                         <p class="card-text text-body">@post.Message</p>
                         <h6 class="card-subtitle mb-2 text-body-secondary">Author: @post.Author</h6>
                         <h6 class="card-subtitle mb-2 text-body-secondary">Published: @post.PublishTime</h6>
@@ -43,21 +43,21 @@
             }
         </div>
     }
-<div class="text-center d-flex">
     @{
         string? bannerTitle = (string?) ViewData[IndexModel.PAGEBANNER_TITLE_DATANAME];
         bool isInputHidden = (bool?) ViewData[IndexModel.IS_INPUT_HIDDEN_DATANAME] ?? false;
     }
     @if (bannerTitle != null)
     {
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">@bannerTitle</h5>
-                <p class="card-text">@ViewData[IndexModel.PAGEBANNER_TEXT_DATANAME]</p>
+        <div class="text-center d-flex">
+            <div class="card" style="width: 100%;">
+                <div class="card-body">
+                    <h5 class="card-title">@bannerTitle</h5>
+                    <p class="card-text">@ViewData[IndexModel.PAGEBANNER_TEXT_DATANAME]</p>
+                </div>
             </div>
         </div>
     }
-</div>
 @if (!isInputHidden)
 {
     <nav class="navbar fixed-bottom navbar-expand-sm bg-body-tertiary">
