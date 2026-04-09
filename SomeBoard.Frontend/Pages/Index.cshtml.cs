@@ -39,8 +39,8 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
-        _ApplyQueryAlerts(ALERT_QUERY);
-        _ApplyQueryAlerts(ERROR_QUERY);
+        _ApplyQueryAlerts(ALERT_QUERY, ALERTS_DATANAME);
+        _ApplyQueryAlerts(ERROR_QUERY, ERRORS_DATANAME);
         if (!_SetBoard()) return;
         var curBoard = (Board?)ViewData[Assets.BOARD_DATANAME];
         Assets.UpdateBoard(curBoard!);
@@ -171,14 +171,14 @@ public class IndexModel : PageModel
         else return _RedirectWithAlert(ERROR_QUERY, "Post cannot be created: Server responded with non-existing post.");
     }
 
-    private void _ApplyQueryAlerts(string query)
+    private void _ApplyQueryAlerts(string query, string type)
     {
         var isQueryPresent = HttpContext.Request.Query.TryGetValue(query, out var alertQuery);
         if (isQueryPresent)
         {
             foreach (var val in alertQuery)
             {
-                if (val is not null) _AddAlert(val, query);
+                if (val is not null) _AddAlert(val, type);
             }
         }
     }
