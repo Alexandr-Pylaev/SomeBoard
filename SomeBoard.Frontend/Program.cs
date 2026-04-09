@@ -1,4 +1,5 @@
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using SomeBoard.Frontend;
 
@@ -7,6 +8,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.AspNetCore.DataProtection", LogEventLevel.Fatal)
     .WriteTo.Console()
     .WriteTo.File("./logs/SomeBoard.Frontend.log", 
         rollingInterval: RollingInterval.Day)
