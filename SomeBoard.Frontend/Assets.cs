@@ -23,7 +23,7 @@ public class Assets
     {
         Boards = configuration.GetSection(BOARDS_PATH).Get<Board[]>() ?? [];
         var defaultBoardAddr = configuration.GetValue<string?>(DEFAULT_BOARD_ADDR);
-        DefaultBoard = Boards.FirstOrDefault(x => x.Query == defaultBoardAddr) ?? Boards.First();
+        DefaultBoard = Boards.FirstOrDefault(x => x.Query == defaultBoardAddr, Boards.First());
         foreach (var board in Boards)
         {
             if (board.Name is not null && board.Description is not null) continue;
