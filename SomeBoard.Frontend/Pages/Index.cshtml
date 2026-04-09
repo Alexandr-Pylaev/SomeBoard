@@ -21,75 +21,75 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
-    @{
-        var posts = (ServerPostDTO[]?)ViewData[IndexModel.POSTS_DATANAME] ?? [];
-    }
-    
-    @for (int b = 0; b < posts.Length; b+=3)
-    {
-        <div class="text-center d-flex">
-            @for (int i = 0; b+i < posts.Length && i < 3; i++)
-            {
-                var post = posts[b + i];
-                
-                <div class="card" style="width: 22rem; margin: 1rem">
-                    <div class="card-body text-start">
-                        <p class="card-text text-body">@post.Message</p>
-                        <h6 class="card-subtitle mb-2 text-body-secondary">Author: @post.Author</h6>
-                        <h6 class="card-subtitle mb-2 text-body-secondary">Published: @post.PublishTime</h6>
-                        <h6 class="card-subtitle mb-2 text-body-tertiary subtile">ID: @post.PostId</h6>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    @{
-        string? bannerTitle = (string?) ViewData[IndexModel.PAGEBANNER_TITLE_DATANAME];
-        bool isInputHidden = (bool?) ViewData[IndexModel.IS_INPUT_HIDDEN_DATANAME] ?? false;
-    }
-    @if (bannerTitle != null)
-    {
-        <div class="text-center d-flex">
-            <div class="card" style="width: 100%;">
-                <div class="card-body">
-                    <h5 class="card-title">@bannerTitle</h5>
-                    <p class="card-text">@ViewData[IndexModel.PAGEBANNER_TEXT_DATANAME]</p>
+@{
+    var posts = (ServerPostDTO[]?)ViewData[IndexModel.POSTS_DATANAME] ?? [];
+}
+
+@for (int b = 0; b < posts.Length; b+=3)
+{
+    <div class="text-center d-flex">
+        @for (int i = 0; b+i < posts.Length && i < 3; i++)
+        {
+            var post = posts[b + i];
+
+            <div class="card" style="width: 22rem; margin: 1rem">
+                <div class="card-body text-start">
+                    <p class="card-text text-body">@post.Message</p>
+                    <h6 class="card-subtitle mb-2 text-body-secondary">Author: @post.Author</h6>
+                    <h6 class="card-subtitle mb-2 text-body-secondary">Published: @post.PublishTime</h6>
+                    <h6 class="card-subtitle mb-2 text-body-tertiary subtile">ID: @post.PostId</h6>
                 </div>
             </div>
+        }
+    </div>
+}
+@{
+    string? bannerTitle = (string?) ViewData[IndexModel.PAGEBANNER_TITLE_DATANAME];
+    bool isInputHidden = (bool?) ViewData[IndexModel.IS_INPUT_HIDDEN_DATANAME] ?? false;
+}
+@if (bannerTitle != null)
+{
+    <div class="text-center d-flex">
+        <div class="card" style="width: 100%;">
+            <div class="card-body">
+                <h5 class="card-title">@bannerTitle</h5>
+                <p class="card-text">@ViewData[IndexModel.PAGEBANNER_TEXT_DATANAME]</p>
+            </div>
         </div>
+    </div>
+}
+<nav class="navbar fixed-bottom navbar-expand-sm bg-body-tertiary d-inline-block">
+    @if (!isInputHidden)
+    {
+        <form class="container-fluid flex-nowrap text-center" style="display: inline-block;" method="post">
+            <div class="input-group">
+                <span class="input-group-text" id="basic-addon1">Username</span>
+                <input asp-for="CreatePost!.Author" type="text" id="input-username" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1"/>
+            </div>
+            <div class="input-group" style="padding-top: 0.5rem; padding-bottom: 0.5rem;">
+                <span class="input-group-text" id="basic-addon2">Text</span>
+                <textarea asp-for="CreatePost!.Message" id="input-text" class="form-control" type="text" placeholder="" aria-label="Text"></textarea>
+            </div>
+            <button class="btn btn-outline-success" id="input-btn" disabled type="submit" style="width: 100%">Send</button>
+        </form>
     }
-    <nav class="navbar fixed-bottom navbar-expand-sm bg-body-tertiary d-inline-block">
-        @if (!isInputHidden)
-        {
-            <form class="container-fluid flex-nowrap text-center" style="display: inline-block;" method="post">
-                <div class="input-group">
-                    <span class="input-group-text" id="basic-addon1">Username</span>
-                    <input asp-for="CreatePost!.Author" type="text" id="input-username" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1"/>
-                </div>
-                <div class="input-group" style="padding-top: 0.5rem; padding-bottom: 0.5rem;">
-                    <span class="input-group-text" id="basic-addon2">Text</span>
-                    <textarea asp-for="CreatePost!.Message" id="input-text" class="form-control" type="text" placeholder="" aria-label="Text"></textarea>
-                </div>
-                <button class="btn btn-outline-success" id="input-btn" disabled type="submit" style="width: 100%">Send</button>
-            </form>
-        }
-        @{
-            var pageNum = (int?) ViewData[IndexModel.PAGE_DATANAME] ?? 0;
-            var pageMax = (long?) ViewData[IndexModel.MAX_PAGE_DATANAME] ?? 0;
-        }
-        <div class="text-center d-flex" style="padding-top: 0.5rem; margin-bottom: 0">
-            <ul class="pagination text-center mx-auto" style="margin-bottom: 0">
+    @{
+        var pageNum = (int?) ViewData[IndexModel.PAGE_DATANAME] ?? 0;
+        var pageMax = (long?) ViewData[IndexModel.MAX_PAGE_DATANAME] ?? 0;
+    }
+    <div class="text-center d-flex" style="padding-top: 0.5rem; margin-bottom: 0">
+        <ul class="pagination text-center mx-auto" style="margin-bottom: 0">
 
-                <li class="page-item"><a class="page-link @if (pageNum <= 0)
-                                                          {
+            <li class="page-item"><a class="page-link @if (pageNum <= 0)
+                                                      {
                                                           @("disabled")
-                                                          }"
-                                         href="/?page=@(Math.Max(pageNum-1, 0))">&laquo;</a></li>
-                <li class="page-item active" style="margin-bottom: 0"><p class="page-link bg-body-tertiary">@pageNum</p></li>
-                <li class="page-item @if (pageNum+1 > pageMax)
-                                                          {
-                                                          @("disabled")
-                                                          }"><a class="page-link" href="/?page=@(Math.Min(pageNum+1, pageMax))">&raquo;</a></li>
-            </ul>
-        </div>
-    </nav>
+                                                      }"
+                                     href="/?page=@(Math.Max(pageNum-1, 0))">&laquo;</a></li>
+            <li class="page-item active" style="margin-bottom: 0"><p class="page-link bg-body-tertiary">@pageNum</p></li>
+            <li class="page-item @if (pageNum+1 > pageMax)
+                                 {
+                                     @("disabled")
+                                 }"><a class="page-link" href="/?page=@(Math.Min(pageNum+1, pageMax))">&raquo;</a></li>
+        </ul>
+    </div>
+</nav>
