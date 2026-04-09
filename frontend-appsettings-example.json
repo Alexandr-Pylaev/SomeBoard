@@ -1,0 +1,13 @@
+{
+  "SomeBoard": {
+    "DefaultBoard": "your_query_name_for_board",
+    "Boards": [
+      {
+        "Name": "Super board name that overrides server name",
+        "Description":  "Super board description that overrides server description",
+        "BackendUrl": "https://some.backend.url/maybe/even/some/reverse/proxy/path",
+        "Query": "your_query_name_for_board"
+      }
+    ]
+  }
+}

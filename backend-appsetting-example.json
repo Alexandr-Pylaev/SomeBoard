@@ -1,0 +1,11 @@
+{
+  "SomeBoard" : {
+    "Posting" : {
+      "Database": "someboard",
+      "Username": "postgres",
+      "PasswordFile": "./your/path/to/your mega password.txt",
+      "Password": "or your old plain password (please, don't place it in appsettings.json, use SomeBoard.Posting.Password env insted)",
+      "Host": "host_to_your_database"
+    }
+  }
+}
