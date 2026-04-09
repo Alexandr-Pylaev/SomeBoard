@@ -3,11 +3,22 @@
     image: backend
     build:
       context: .
-      dockerfile: Backend/Dockerfile
+      dockerfile: SomeBoard.Backend/Dockerfile
+    ports: 
+      - "$BACKEND_HTTP_PORT:9001"
+      - "$BACKEND_HTTPS_PORT:9000"
+    volumes:
+      - "$BACKEND_CONFIG:/app/appsettings.json"
+      - "$BACKEND_LOGS:/app/logs/"
 
   frontend:
     image: frontend
     build:
       context: .
-      dockerfile: Frontend/Dockerfile
-
+      dockerfile: SomeBoard.Backend/Dockerfile
+    ports:
+      - "$FRONTEND_HTTP_PORT:80"
+      - "$FRONTEND_HTTPS_PORT:443"
+    volumes:
+      - "$FRONTEND_CONFIG:/app/appsettings.json"
+      - "$FRONTEND_LOGS:/app/logs/"
