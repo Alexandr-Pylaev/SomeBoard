@@ -19,10 +19,18 @@ services:
     environment: 
       - "ASPNETCORE_ENVIRONMENT=Production"
       - "ASPNETCORE_HTTP_PORTS=${BACKEND_HTTP_PORT}"
+      - "SomeBoard.Posting.Host=SomeBoard.Database"
+      - "SomeBoard.Posting.Username=${DATABASE_USERNAME}"
+      - "SomeBoard.Posting.Database=${DATABASE_NAME}"
+      - "SomeBoard.Posting.Password=${DATABASE_PASSWORD}"
+      # If you want to use passfile, remove # from line below
+      #- "SomeBoard.Posting.PasswordFile=${DATABASE_PASSFILE}"
       - "SomeBoard.Posting.AdminSecretFile=${BACKEND_ADMINSECRET}"
     # If you want to use HTTPS, remove # from lines below
     #  - "ASPNETCORE_HTTPS_PORTS=${BACKEND_HTTPS_PORT}"
     restart: unless-stopped
+    depends_on:
+      - postgres
     env_file:
       - .env
   
@@ -50,3 +58,17 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+  postgres:
+    container_name: SomeBoard.Database
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_DB: ${DATABASE_NAME}
+      # If you want to use passfile, comment line above and remove # from line below
+      # POSTGRES_PASSFILE: ${DATABASE_PASSFILE}
+      # If your database isn't stored on SSDs, remove # from line below
+      # DB_STORAGE_TYPE: 'HDD'
+    volumes:
+        - ${DATABASE_LOCATION}:/var/lib/postgresql/data
+    restart: unless-stopped
