@@ -70,5 +70,5 @@ services:
       # If your database isn't stored on SSDs, remove # from line below
       # DB_STORAGE_TYPE: 'HDD'
     volumes:
-        - ${DATABASE_LOCATION}:/var/lib/postgresql/data
+        - ${DATABASE_LOCATION}:/var/lib/postgresql
     restart: unless-stopped
