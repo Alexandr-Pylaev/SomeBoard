@@ -19,6 +19,7 @@ services:
     environment: 
       - "ASPNETCORE_ENVIRONMENT=Production"
       - "ASPNETCORE_HTTP_PORTS=${BACKEND_HTTP_PORT}"
+      - "SomeBoard.Posting.AdminSecretFile=${BACKEND_ADMINSECRET}"
     # If you want to use HTTPS, remove # from lines below
     #  - "ASPNETCORE_HTTPS_PORTS=${BACKEND_HTTPS_PORT}"
     restart: unless-stopped
