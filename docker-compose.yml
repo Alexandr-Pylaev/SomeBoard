@@ -1,4 +1,5 @@
-﻿services:
+﻿name: SomeBoard
+services:
   backend:
     image: backend
     build:
