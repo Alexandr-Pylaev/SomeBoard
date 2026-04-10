@@ -21,6 +21,7 @@ services:
       - "ASPNETCORE_HTTP_PORTS=${BACKEND_HTTP_PORT}"
     # If you want to use HTTPS, remove # from lines below
     #  - "ASPNETCORE_HTTPS_PORTS=${BACKEND_HTTPS_PORT}"
+    restart: unless-stopped
   
   frontend:
     image: someboard.frontend
@@ -43,3 +44,4 @@ services:
       - "ASPNETCORE_HTTP_PORTS=${FRONTEND_HTTP_PORT}"
       # If you want to use HTTPS, remove # from lines below
       #  - "ASPNETCORE_HTTPS_PORTS=${FRONTEND_HTTPS_PORT}"
+    restart: unless-stopped
