@@ -23,11 +23,12 @@ public class Program
                 rollingInterval: RollingInterval.Day)
             .CreateLogger();
         var builder = WebApplication.CreateBuilder(args);
-
-        AddPostingContext(builder);
-
+        
         // Add services to the container.
         builder.Services.AddSerilog();
+        
+        AddPostingContext(builder);
+        
         // builder.Services.AddAuthorization(); // right now backend does not use authorization
 
         builder.Services.AddControllers();
