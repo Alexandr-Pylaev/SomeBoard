@@ -1,0 +1,7 @@
+services: 
+  https_frontend:
+    environment:
+      - "ASPNETCORE_Kestrel__Certificates__Default__Path=${FRONTEND_CERT_PATH}"
+  https_backend:
+    environment:
+      - "ASPNETCORE_Kestrel__Certificates__Default__Path=${BACKEND_CERT_PATH}"
