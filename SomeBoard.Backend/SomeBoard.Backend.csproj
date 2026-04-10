@@ -8,6 +8,7 @@
         <AssemblyName>SomeBoard.Backend</AssemblyName>
         <RootNamespace>SomeBoard.Backend</RootNamespace>
       <UserSecretsId>531a87e0-ba0c-4991-9546-5c90070859af</UserSecretsId>
+      <AssemblyVersion>1.0</AssemblyVersion>
   </PropertyGroup>
 
     <ItemGroup>
