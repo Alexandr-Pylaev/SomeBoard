@@ -1,7 +1,7 @@
 ﻿name: SomeBoard
 services:
   backend:
-    image: somebord.backend:latest
+    image: ghcr.io/alexandr-pylaev/somebord.backend:latest
     container_name: SomeBoard.Backend
     build:
       context: .
@@ -35,7 +35,7 @@ services:
       - .env
   
   frontend:
-    image: someboard.frontend:latest
+    image: ghcr.io/alexandr-pylaev//someboard.frontend:latest
     container_name: SomeBoard.Frontend
     build:
       context: .
