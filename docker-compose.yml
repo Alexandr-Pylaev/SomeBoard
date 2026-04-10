@@ -19,13 +19,13 @@ services:
     environment: 
       - "ASPNETCORE_ENVIRONMENT=Production"
       - "ASPNETCORE_HTTP_PORTS=${BACKEND_HTTP_PORT}"
-      - "SomeBoard.Posting.Host=SomeBoard.Database"
-      - "SomeBoard.Posting.Username=${DATABASE_USERNAME}"
-      - "SomeBoard.Posting.Database=${DATABASE_NAME}"
-      - "SomeBoard.Posting.Password=${DATABASE_PASSWORD}"
+      - "SomeBoard__Posting__Host=postgres:5432"
+      - "SomeBoard__Posting__Username=${DATABASE_USERNAME}"
+      - "SomeBoard__Posting__Database=${DATABASE_NAME}"
+      - "SomeBoard__Posting__Password=${DATABASE_PASSWORD}"
       # If you want to use passfile, remove # from line below
-      #- "SomeBoard.Posting.PasswordFile=${DATABASE_PASSFILE}"
-      - "SomeBoard.Posting.AdminSecretFile=${BACKEND_ADMINSECRET}"
+      #- "SomeBoard__Posting__PasswordFile=${DATABASE_PASSFILE}"
+      - "SomeBoard__Posting__AdminSecretFile=${BACKEND_ADMINSECRET}"
     # If you want to use HTTPS, remove # from lines below
     #  - "ASPNETCORE_HTTPS_PORTS=${BACKEND_HTTPS_PORT}"
     restart: unless-stopped
