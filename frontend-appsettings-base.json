@@ -1,0 +1,11 @@
+{
+  "SomeBoard": {
+    "DefaultBoard": "board",
+    "Boards": [
+      {
+        "BackendUrl": "http://backend:9001",
+        "Query": "board"
+      }
+    ]
+  }
+}
