@@ -1,7 +1,7 @@
 ﻿name: SomeBoard
 services:
   backend:
-    image: somebord.backend
+    image: somebord.backend:latest
     container_name: SomeBoard.Backend
     build:
       context: .
@@ -27,7 +27,7 @@ services:
       - .env
   
   frontend:
-    image: someboard.frontend
+    image: someboard.frontend:latest
     container_name: SomeBoard.Frontend
     build:
       context: .
