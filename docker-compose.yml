@@ -11,6 +11,8 @@
     volumes:
       - "$BACKEND_CONFIG:/app/appsettings.json"
       - "$BACKEND_LOGS:/app/logs/"
+    environment: 
+      - "ASPNETCORE_ENVIRONMENT=Production"
   
   frontend:
     image: frontend
@@ -24,3 +26,5 @@
     volumes:
       - "$FRONTEND_CONFIG:/app/appsettings.json"
       - "$FRONTEND_LOGS:/app/logs/"
+    environment:
+      - "ASPNETCORE_ENVIRONMENT=Production"
