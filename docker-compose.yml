@@ -22,6 +22,8 @@ services:
     # If you want to use HTTPS, remove # from lines below
     #  - "ASPNETCORE_HTTPS_PORTS=${BACKEND_HTTPS_PORT}"
     restart: unless-stopped
+    env_file:
+      - .env
   
   frontend:
     image: someboard.frontend
@@ -45,3 +47,5 @@ services:
       # If you want to use HTTPS, remove # from lines below
       #  - "ASPNETCORE_HTTPS_PORTS=${FRONTEND_HTTPS_PORT}"
     restart: unless-stopped
+    env_file:
+      - .env
