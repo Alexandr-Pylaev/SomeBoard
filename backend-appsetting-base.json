@@ -1,7 +1,2 @@
 {
-  "SomeBoard" : {
-    "Posting" : {
-      "AdminSecretFile": "./adminsecrets"
-    }
-  }
 }
