@@ -1,7 +1,8 @@
 ﻿name: SomeBoard
 services:
   backend:
-    image: backend
+    image: somebord.backend
+    container_name: SomeBoard.Backend
     build:
       context: .
       dockerfile: SomeBoard.Backend/Dockerfile
@@ -22,7 +23,8 @@ services:
     #  - "ASPNETCORE_HTTPS_PORTS=${BACKEND_HTTPS_PORT}"
   
   frontend:
-    image: frontend
+    image: someboard.frontend
+    container_name: SomeBoard.Frontend
     build:
       context: .
       dockerfile: SomeBoard.Frontend/Dockerfile
