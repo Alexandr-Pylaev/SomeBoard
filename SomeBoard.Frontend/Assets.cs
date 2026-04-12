@@ -42,7 +42,7 @@ public class Assets
             var response = client.Execute(req);
             if (!response.IsSuccessful)
             {
-                Log.Error($"Failed to update board: {response.StatusCode}");
+                Log.Error($"Failed to update board: {response.ErrorMessage} ({response.StatusCode})");
             }
             var boardInfo = JsonSerializer.Deserialize<BoardInfoDTO>(response.Content ?? "{}", new JsonSerializerOptions()
             {

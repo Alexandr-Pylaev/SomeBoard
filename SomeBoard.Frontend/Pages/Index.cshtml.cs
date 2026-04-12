@@ -209,7 +209,7 @@ public class IndexModel : PageModel
                         ErrorCode = "SERVER_HTTP_ERROR"
                     });
                 }
-
+                Log.Error($"Response error: {result.ErrorMessage}");
                 return null;
             }
         }
