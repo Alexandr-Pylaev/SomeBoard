@@ -17,6 +17,7 @@ services:
     volumes:
       - "$BACKEND_CONFIG:/app/appsettings.json"
       - "$BACKEND_LOGS:/app/logs/"
+      - "$BACKEND_ADMINSECRET:/app/${BACKEND_ADMINSECRET}"
     environment: 
       - "ASPNETCORE_ENVIRONMENT=Production"
       - "ASPNETCORE_HTTP_PORTS=${BACKEND_HTTP_PORT}"
