@@ -1,7 +1,7 @@
 ﻿name: SomeBoard
 services:
   backend:
-    image: ghcr.io/alexandr-pylaev/somebord.backend:latest
+    image: ghcr.io/alexandr-pylaev/someboard.backend:latest
     container_name: SomeBoard.Backend
     # If you want to build image, remove # from lines below
     #build:
