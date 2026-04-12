@@ -11,6 +11,7 @@ Small anonymous board for text-only posts.<br/>
 - Copy frontend-appsettings-base.json and backend-appsettings-base.json to created folders
 - Rename both files to config.json
 - Change this files if you need (add more boards, override name and description, etc., you can check ...-appsettings-example for more info)
+- Create file ./backend/admin.secret and put admin password in it
 - Compose (`docker compose up -d`)
 
 ## Build and edit
