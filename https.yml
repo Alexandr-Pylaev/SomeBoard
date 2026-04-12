@@ -1,7 +1,11 @@
 services: 
   https_frontend:
     environment:
-      - "ASPNETCORE_Kestrel__Certificates__Default__Path=${FRONTEND_CERT_PATH}"
+      - "ASPNETCORE_Kestrel__Certificates__Default__Path=/app/cert.pfx"
+    volumes:
+      - "${FRONTEND_CERT_PATH}:/app/cert.pfx"
   https_backend:
     environment:
-      - "ASPNETCORE_Kestrel__Certificates__Default__Path=${BACKEND_CERT_PATH}"
+      - "ASPNETCORE_Kestrel__Certificates__Default__Path=/app/cert.pfx"
+    volumes:
+      - "${BACKEND_CERT_PATH}:/app/cert.pfx"
